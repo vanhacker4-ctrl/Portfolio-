@@ -9,16 +9,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    rolldownOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('framer-motion')) return 'vendor-motion';
-            if (id.includes('lucide-react')) return 'vendor-icons';
-            if (id.includes('react')) return 'vendor-react';
-          }
-        },
-      },
-    },
+    chunkSizeWarningLimit: 700,
   },
 });

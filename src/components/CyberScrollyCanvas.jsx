@@ -57,36 +57,63 @@ export default function CyberScrollyCanvas({
     }
   }, [revealActive, isReady]);
 
-  // Preload all 75 frames with safety timeout fallback
+  // Progressive throttled preloader (key frames first, concurrency=4) so startup never floods 55MB at once
   useEffect(() => {
+    let cancelled = false;
     let count = 0;
-    const imgs = [];
+    const imgs = new Array(TOTAL_FRAMES).fill(null);
+    imagesRef.current = imgs;
 
     const safetyTimer = setTimeout(() => {
-      triggerReady();
-    }, 2400);
+      if (!cancelled) triggerReady();
+    }, 1200);
 
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
+    // Prioritize key milestones first (0, 12, 24, 36, 48, 60, 74), then fill remaining frames
+    const priorityIndices = [0, 12, 24, 36, 48, 60, 74];
+    const queue = [
+      ...priorityIndices,
+      ...Array.from({ length: TOTAL_FRAMES }, (_, i) => i).filter(
+        (i) => !priorityIndices.includes(i)
+      ),
+    ];
+
+    let cursor = 0;
+    const CONCURRENCY = 4;
+
+    const loadNext = () => {
+      if (cancelled || cursor >= queue.length) return;
+      const idx = queue[cursor++];
       const img = new Image();
-      const paddedIndex = String(i).padStart(2, '0');
-      img.src = `/glass/frame_${paddedIndex}_delay-0.067s.png`;
+      const paddedIndex = String(idx).padStart(2, '0');
 
-      const handleStep = () => {
+      const onDone = () => {
+        if (cancelled) return;
         count++;
         setLoadedCount(count);
-        if (count >= TOTAL_FRAMES) {
+        if (idx === 0 || count >= TOTAL_FRAMES) {
           clearTimeout(safetyTimer);
           triggerReady();
         }
+        loadNext();
       };
 
-      img.onload = handleStep;
-      img.onerror = handleStep;
-      imgs.push(img);
-    }
+      img.onload = onDone;
+      img.onerror = onDone;
+      img.src = `/glass/frame_${paddedIndex}_delay-0.067s.png`;
+      imgs[idx] = img;
+    };
 
-    imagesRef.current = imgs;
-    return () => clearTimeout(safetyTimer);
+    const startTimer = setTimeout(() => {
+      for (let w = 0; w < CONCURRENCY; w++) {
+        loadNext();
+      }
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(startTimer);
+      clearTimeout(safetyTimer);
+    };
   }, [triggerReady]);
 
   // Unmount preloader smoothly after fade-out transition
@@ -152,7 +179,21 @@ export default function CyberScrollyCanvas({
       Math.max(0, Math.round(currentFrameRef.current))
     );
 
-    const img = imagesRef.current[frameIndex];
+    let img = imagesRef.current[frameIndex];
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
+        const prev = imagesRef.current[frameIndex - delta];
+        if (prev && prev.complete && prev.naturalWidth > 0) {
+          img = prev;
+          break;
+        }
+        const next = imagesRef.current[frameIndex + delta];
+        if (next && next.complete && next.naturalWidth > 0) {
+          img = next;
+          break;
+        }
+      }
+    }
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = canvas.width / dpr;
