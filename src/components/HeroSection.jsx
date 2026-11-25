@@ -170,7 +170,6 @@ export default function HeroSection({ isRevealed = true }) {
   const latencyBadgeRef = useRef(null);
   const frameCounterRef = useRef(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [videoFailed, setVideoFailed] = useState(false);
   const prefersReducedMotion = Boolean(useReducedMotion());
 
   // Close lightbox modal on Escape
@@ -183,71 +182,51 @@ export default function HeroSection({ isRevealed = true }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [previewImage]);
 
-  // Ensure hero portrait video buffers, stays muted for autoplay, and retries cleanly
+  // Ensure hero portrait video buffers, stays muted for autoplay, and plays smoothly across all browsers
   useEffect(() => {
-    if (videoFailed || !heroRef.current || !videoRef.current) return;
     const videoEl = videoRef.current;
-    let isVisible = true;
+    if (!videoEl) return;
 
     videoEl.defaultMuted = true;
     videoEl.muted = true;
     videoEl.playsInline = true;
 
     const attemptPlay = () => {
-      if (!isVisible) return;
       videoEl.muted = true;
       const playPromise = videoEl.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
-          // Will retry on canplay or first user interaction if browser gated autoplay
+          // Handled silently; will retry on first user interaction if browser restricted
         });
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (!document.hidden && isVisible) {
-        attemptPlay();
-      }
-    };
+    attemptPlay();
 
     const handleFirstInteraction = () => {
-      if (videoEl.paused && isVisible) {
+      if (videoEl.paused) {
         attemptPlay();
       }
     };
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-        if (isVisible) {
-          attemptPlay();
-        } else if (!videoEl.paused) {
-          videoEl.pause();
-        }
-      },
-      { threshold: 0.05 }
-    );
-
-    observer.observe(heroRef.current);
     videoEl.addEventListener('loadedmetadata', attemptPlay);
     videoEl.addEventListener('loadeddata', attemptPlay);
     videoEl.addEventListener('canplay', attemptPlay);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pointerdown', handleFirstInteraction, { passive: true, once: true });
+    window.addEventListener('touchstart', handleFirstInteraction, { passive: true, once: true });
+    window.addEventListener('scroll', handleFirstInteraction, { passive: true, once: true });
     window.addEventListener('keydown', handleFirstInteraction, { passive: true, once: true });
 
-    attemptPlay();
-
     return () => {
-      observer.disconnect();
       videoEl.removeEventListener('loadedmetadata', attemptPlay);
       videoEl.removeEventListener('loadeddata', attemptPlay);
       videoEl.removeEventListener('canplay', attemptPlay);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('scroll', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
     };
-  }, [videoFailed]);
+  }, []);
 
   // Update telemetry canvas frame text directly without triggering React re-renders
   useEffect(() => {
@@ -617,38 +596,19 @@ export default function HeroSection({ isRevealed = true }) {
               }}
               className="relative w-full aspect-[16/10] max-h-[410px] flex items-center justify-center overflow-hidden rounded-3xl group/portrait z-10"
             >
-              {videoFailed ? (
-                <picture className="w-full h-full">
-                  <source srcSet="/glass/webp/frame_00_delay-0.067s.webp" type="image/webp" />
-                  <img
-                    src="/glass/frame_00_delay-0.067s.png"
-                    alt="Sotheavan Pich Cyber Portrait"
-                    decoding="async"
-                    fetchPriority="high"
-                    className="w-full h-full object-cover object-center scale-[1.06] select-none pointer-events-none group-hover/portrait:scale-[1.08] transition-transform duration-500"
-                  />
-                </picture>
-              ) : (
-                <video
-                  ref={videoRef}
-                  poster="/glass/webp/frame_00_delay-0.067s.webp"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  onError={() => {
-                    if (videoRef.current?.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-                      setVideoFailed(true);
-                    }
-                  }}
-                  className="w-full h-full object-cover object-center scale-[1.14] select-none pointer-events-none group-hover/portrait:scale-[1.18] transition-transform duration-500"
-                >
-                  <source src="/videos/hero-portrait.webm" type="video/webm" />
-                  <source src="/videos/hero-portrait-opt.mp4" type="video/mp4" />
-                  <source src="/videos/hero-portrait.mp4" type="video/mp4" />
-                </video>
-              )}
+              <video
+                ref={videoRef}
+                poster="/images/sotheavan-portrait.webp"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                className="w-full h-full object-cover object-center scale-[1.14] select-none pointer-events-none group-hover/portrait:scale-[1.18] transition-transform duration-500"
+              >
+                <source src="/videos/hero-portrait.mp4" type="video/mp4" />
+                <source src="/videos/hero-portrait-opt.mp4" type="video/mp4" />
+              </video>
             </div>
 
             {/* 4 FLOATING HUD CARDS (PERIMETER POSITIONED - NEVER BLOCKS VIDEO) */}
