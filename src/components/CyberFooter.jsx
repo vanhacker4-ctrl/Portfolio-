@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cyberAudio } from '../utils/cyberAudio';
 import { navigateWithGlitch } from '../utils/cyberNavigation';
+import { GITHUB_CONFIG } from '../config/github';
 import { ScrollReveal, ScrollDivider } from './ScrollReveal';
 
 /* =========================================================================
@@ -55,6 +56,16 @@ const FacebookIcon = () => (
     <path
       d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
       fill="#1877F2"
+    />
+  </svg>
+);
+
+const GitHubFooterIcon = () => (
+  <svg className="w-4 h-4 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
     />
   </svg>
 );
@@ -106,6 +117,22 @@ export default function CyberFooter() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close open footer modals/popovers on Escape
+  useEffect(() => {
+    if (!messageModalOpen && !qrModalOpen && !qrPopoverOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      if (messageModalOpen) setMessageModalOpen(false);
+      if (qrModalOpen) setQrModalOpen(false);
+      if (qrPopoverOpen) {
+        setQrPopoverOpen(false);
+        setQrPinned(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [messageModalOpen, qrModalOpen, qrPopoverOpen]);
+
   // Dismiss QR popover on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -144,12 +171,17 @@ export default function CyberFooter() {
   const handleMessageSubmit = (e) => {
     e.preventDefault();
     cyberAudio.playChime();
+    const subject = encodeURIComponent(`Portfolio Inquiry from ${msgData.name.trim() || 'Visitor'}`);
+    const body = encodeURIComponent(
+      `Name: ${msgData.name.trim()}\nEmail: ${msgData.email.trim()}\n\n${msgData.message.trim()}`
+    );
+    window.location.href = `mailto:pichsotheavan020@gmail.com?subject=${subject}&body=${body}`;
     setFormSent(true);
     setTimeout(() => {
       setFormSent(false);
       setMessageModalOpen(false);
       setMsgData({ name: '', email: '', message: '' });
-    }, 2500);
+    }, 3000);
   };
 
   const handleQrButtonMouseEnter = () => {
@@ -189,15 +221,16 @@ export default function CyberFooter() {
     }
   };
 
+  const hasGitHub = Boolean(GITHUB_CONFIG.username && GITHUB_CONFIG.username.trim() !== '');
+
   const navLinks = [
-    { label: 'Overview', href: '#hero', index: '01' },
-    { label: 'About Me', href: '#about', index: '02' },
-    { label: 'Technical Skills', href: '#skills', index: '03' },
-    { label: 'Currently Exploring', href: '#exploring', index: '04' },
-    { label: 'Selected Projects', href: '#projects', index: '05' },
-    { label: 'Learning Journey', href: '#timeline', index: '06' },
-    { label: 'Curriculum Vitae', href: '#cv', index: '07' },
-    { label: 'Contact', href: '#contact', index: '08' },
+    { label: 'Overview', href: '#hero' },
+    { label: 'About and CV', href: '#about' },
+    { label: 'Technical Skills', href: '#skills' },
+    { label: 'Currently Exploring', href: '#exploring' },
+    { label: hasGitHub ? 'Projects and GitHub' : 'Selected Projects', href: '#projects' },
+    { label: 'Learning Journey', href: '#timeline' },
+    { label: 'Contact', href: '#contact' },
   ];
 
   return (
@@ -213,11 +246,11 @@ export default function CyberFooter() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         {/* Subtle radial cyan & emerald ambient glow */}
         <div
-          className="absolute -top-36 right-1/4 w-[520px] h-[520px] bg-[radial-gradient(circle,rgba(0,245,255,0.08)_0%,transparent_70%)] blur-3xl"
+          className="absolute -top-36 right-1/4 w-[560px] h-[560px] bg-[radial-gradient(circle,rgba(0,245,255,0.08)_0%,transparent_70%)]"
           aria-hidden="true"
         />
         <div
-          className="absolute -bottom-28 left-8 w-[480px] h-[480px] bg-[radial-gradient(circle,rgba(16,185,129,0.06)_0%,transparent_70%)] blur-3xl"
+          className="absolute -bottom-28 left-8 w-[520px] h-[520px] bg-[radial-gradient(circle,rgba(16,185,129,0.06)_0%,transparent_70%)]"
           aria-hidden="true"
         />
 
@@ -252,13 +285,13 @@ export default function CyberFooter() {
             </div>
 
             {/* Subtitle in cyan monospace */}
-            <div className="text-xs font-mono font-medium text-cyan-400 tracking-wider uppercase">
-              FULL-STACK DEVELOPER &amp; AI EXPLORER
+            <div className="text-xs font-mono font-medium text-cyan-400 tracking-wide">
+              Full-Stack Developer and AI Prompt Engineer
             </div>
 
             {/* Bio paragraph */}
             <p className="font-inter text-sm text-zinc-200 font-normal leading-relaxed max-w-md">
-              Second-year programming student and scholarship recipient. Building across code, exploring beyond technology, and turning curiosity into functional software.
+              Second-year programming student and merit scholarship recipient. Building across the full stack, exploring emerging systems, and turning curiosity into reliable software.
             </p>
 
             {/* Action & Status Row */}
@@ -269,11 +302,12 @@ export default function CyberFooter() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#10B981]" />
                 </span>
-                <span>Open for Opportunities</span>
+                <span>Open to Opportunities</span>
               </div>
 
               {/* High-Contrast Solid Cyan CTA */}
               <button
+                type="button"
                 onClick={() => {
                   cyberAudio.playClick();
                   setMessageModalOpen(true);
@@ -288,11 +322,11 @@ export default function CyberFooter() {
           </ScrollReveal>
 
           {/* -----------------------------------------------------------------
-             COLUMN 2: INDEX NAVIGATION (lg:col-span-3)
+             COLUMN 2: NAVIGATION (lg:col-span-3)
              ----------------------------------------------------------------- */}
           <ScrollReveal className="lg:col-span-3 space-y-2" y={28} blur={10} delay={0.1}>
             <div className="font-mono text-xs text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span>INDEX NAVIGATION</span>
+              <span>Navigation</span>
             </div>
 
             <nav className="space-y-1 font-inter text-xs">
@@ -302,11 +336,9 @@ export default function CyberFooter() {
                   href={item.href}
                   onClick={(e) => handleNavScroll(e, item.href)}
                   onMouseEnter={() => cyberAudio.playHover()}
-                  className="group flex items-center gap-3 py-1.5 text-zinc-200 hover:text-white transition-all duration-300 cursor-pointer"
+                  className="group flex items-center gap-2.5 py-1.5 text-zinc-200 hover:text-white transition-all duration-300 cursor-pointer"
                 >
-                  <span className="font-mono text-xs text-zinc-400 group-hover:text-cyan-400 font-medium transition-colors duration-300 w-3 shrink-0">
-                    &rsaquo;
-                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 group-hover:bg-[#00F5FF] group-hover:scale-125 transition-all duration-300 shrink-0" />
                   <span className="group-hover:translate-x-1.5 group-hover:text-cyan-300 transition-all duration-300 font-mono text-xs">
                     {item.label}
                   </span>
@@ -316,13 +348,13 @@ export default function CyberFooter() {
           </ScrollReveal>
 
           {/* -----------------------------------------------------------------
-             COLUMN 3: UNCLUTTERED DIRECT CHANNELS (lg:col-span-4)
+             COLUMN 3: DIRECT CHANNELS (lg:col-span-4)
              ----------------------------------------------------------------- */}
           <ScrollReveal className="lg:col-span-4 space-y-3 relative z-20" y={28} blur={10} delay={0.2}>
             <div className="font-mono text-xs text-zinc-300 uppercase tracking-wider mb-4 flex items-center justify-between">
-              <span>DIRECT CHANNELS</span>
-              <span className="text-cyan-400/80 text-[10px] tracking-widest font-mono">
-                ENCRYPTED &bull; DIRECT
+              <span>Direct Channels</span>
+              <span className="text-cyan-400/80 text-[10px] tracking-wider font-mono">
+                Direct Contact
               </span>
             </div>
 
@@ -346,6 +378,7 @@ export default function CyberFooter() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     {/* QR Icon Button with Popover Trigger */}
                     <button
+                      type="button"
                       ref={qrButtonRef}
                       onClick={handleQrButtonClick}
                       onMouseEnter={handleQrButtonMouseEnter}
@@ -363,6 +396,7 @@ export default function CyberFooter() {
 
                     {/* Copy Button */}
                     <button
+                      type="button"
                       onClick={() => handleCopy('+8562054580186', 'tg')}
                       className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-white/[0.1] text-zinc-200 hover:text-white transition-all cursor-pointer"
                       title="Copy Telegram Number"
@@ -413,6 +447,7 @@ export default function CyberFooter() {
                           }}
                           className="p-1 rounded-md text-zinc-200 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
                           title="Enlarge Modal"
+                          aria-label="Enlarge Telegram QR Modal"
                         >
                           <Maximize2 className="w-3 h-3" />
                         </button>
@@ -424,6 +459,7 @@ export default function CyberFooter() {
                           }}
                           className="p-1 rounded-md text-zinc-200 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
                           title="Close Popover"
+                          aria-label="Close Telegram QR Popover"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -440,11 +476,16 @@ export default function CyberFooter() {
                       }}
                       className="relative bg-white p-2.5 rounded-xl shadow-lg mx-auto mb-3 cursor-pointer group/qrimg overflow-hidden border border-white/20"
                     >
-                      <img
-                        src="/images/telegram-qr.jpg"
-                        alt="Telegram QR Code"
-                        className="w-full max-w-[170px] h-auto mx-auto object-contain rounded-lg transition-transform duration-300 group-hover/qrimg:scale-102"
-                      />
+                      <picture>
+                        <source srcSet="/images/telegram-qr.webp" type="image/webp" />
+                        <img
+                          src="/images/telegram-qr.jpg"
+                          alt="Telegram QR Code"
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full max-w-[170px] h-auto mx-auto object-contain rounded-lg transition-transform duration-300 group-hover/qrimg:scale-102"
+                        />
+                      </picture>
                       <div className="absolute left-1.5 right-1.5 h-[2px] bg-gradient-to-r from-transparent via-[#229ED9] to-transparent shadow-[0_0_10px_#229ED9] animate-laser-sweep pointer-events-none" />
                     </div>
 
@@ -457,10 +498,11 @@ export default function CyberFooter() {
 
                     <div className="flex gap-2">
                       <button
+                        type="button"
                         onClick={() => handleCopy('+8562054580186', 'popover')}
                         className="flex-1 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 bg-slate-800/80 text-[11px] font-mono text-zinc-300 hover:text-white transition-all cursor-pointer"
                       >
-                        {copiedKey === 'popover' ? 'Copied!' : 'Copy'}
+                        {copiedKey === 'popover' ? 'Copied' : 'Copy'}
                       </button>
                       <a
                         href="https://t.me/+8562054580186"
@@ -469,7 +511,7 @@ export default function CyberFooter() {
                         onClick={() => cyberAudio.playClick()}
                         className="flex-1 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-[11px] font-space font-semibold text-slate-950 transition-all flex items-center justify-center gap-1 shadow-sm cursor-pointer"
                       >
-                        <span>Open App</span>
+                        <span>Open Telegram</span>
                         <ArrowUpRight className="w-3 h-3" />
                       </a>
                     </div>
@@ -488,13 +530,14 @@ export default function CyberFooter() {
                 >
                   <WhatsAppIcon />
                   <span className="font-mono text-xs tracking-tight text-zinc-200 group-hover:text-emerald-300 transition-colors">
-                    020 54 580 186
+                    +856 20 54 580 186
                   </span>
                 </a>
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
-                    onClick={() => handleCopy('02054580186', 'wa')}
+                    type="button"
+                    onClick={() => handleCopy('+8562054580186', 'wa')}
                     className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-white/[0.1] text-zinc-200 hover:text-white transition-all cursor-pointer"
                     title="Copy WhatsApp Number"
                     aria-label="Copy WhatsApp Number"
@@ -568,7 +611,7 @@ export default function CyberFooter() {
                 >
                   <FacebookIcon />
                   <span className="font-mono text-xs tracking-tight text-zinc-200 group-hover:text-blue-300 transition-colors">
-                    FB: Sotheavan Pich
+                    Facebook: Sotheavan Pich
                   </span>
                 </a>
 
@@ -598,6 +641,50 @@ export default function CyberFooter() {
                   </a>
                 </div>
               </div>
+
+              {/* Row 5: GitHub */}
+              {hasGitHub && GITHUB_CONFIG.profileUrl && (
+                <div className="group flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-white/[0.08] hover:border-cyan-400/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] transition-all duration-300">
+                  <a
+                    href={GITHUB_CONFIG.profileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => cyberAudio.playClick()}
+                    className="flex items-center gap-3 text-zinc-300 group-hover:text-white transition-colors flex-1 min-w-0"
+                  >
+                    <GitHubFooterIcon />
+                    <span className="font-mono text-xs tracking-tight text-zinc-200 group-hover:text-cyan-300 transition-colors truncate">
+                      @{GITHUB_CONFIG.username}
+                    </span>
+                  </a>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleCopy(GITHUB_CONFIG.profileUrl, 'gh')}
+                      className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-white/[0.1] text-zinc-200 hover:text-white transition-all cursor-pointer"
+                      title="Copy GitHub Profile URL"
+                      aria-label="Copy GitHub Profile URL"
+                    >
+                      {copiedKey === 'gh' ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <a
+                      href={GITHUB_CONFIG.profileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => cyberAudio.playClick()}
+                      className="p-1.5 rounded-lg text-zinc-200 hover:text-cyan-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
+                      title="Visit GitHub Profile"
+                      aria-label="Visit GitHub Profile"
+                    >
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </ScrollReveal>
         </div>
@@ -610,13 +697,13 @@ export default function CyberFooter() {
           <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-6 text-xs font-mono text-zinc-300">
             {/* Left: Clean Copyright Signature */}
             <div className="text-zinc-200 tracking-tight text-center md:text-left">
-              &copy; 2026 Sotheavan Pich &bull; Crafted with React &amp; TypeScript
+              &copy; 2026 Sotheavan Pich &bull; Built with React and Tailwind CSS
             </div>
 
             {/* Center: Live Ticking Local Clock synced to SE Asia / Vientiane time */}
             <div className="flex items-center gap-2.5 font-mono text-xs">
               <span className="text-cyan-400 font-semibold tracking-wider">
-                {timeStr || '01:30:00'} ICT
+                {timeStr || '--:--:--'} ICT
               </span>
               <span className="text-zinc-400">&bull;</span>
               <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
@@ -624,12 +711,13 @@ export default function CyberFooter() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_6px_#10B981]" />
                 </span>
-                <span>UTC+7 SE ASIA</span>
+                <span>UTC+7 Southeast Asia</span>
               </span>
             </div>
 
             {/* Right: Sleek Back to top pill with hover border glow */}
             <button
+              type="button"
               onClick={scrollToTop}
               onMouseEnter={() => cyberAudio.playHover()}
               className="group flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-cyan-400/40 text-xs font-mono text-zinc-200 hover:text-white transition-all duration-300 shadow-sm hover:shadow-[0_0_15px_rgba(6,182,212,0.18)] cursor-pointer"
@@ -682,11 +770,16 @@ export default function CyberFooter() {
 
               {/* High-Resolution QR Card */}
               <div className="relative bg-white p-4 rounded-2xl shadow-2xl mx-auto mb-5 overflow-hidden border border-white/20">
-                <img
-                  src="/images/telegram-qr.jpg"
-                  alt="Telegram QR Code"
-                  className="w-full max-w-[240px] mx-auto object-contain rounded-xl"
-                />
+                <picture>
+                  <source srcSet="/images/telegram-qr.webp" type="image/webp" />
+                  <img
+                    src="/images/telegram-qr.jpg"
+                    alt="Telegram QR Code"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full max-w-[240px] mx-auto object-contain rounded-xl"
+                  />
+                </picture>
                 <div className="absolute left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-[#229ED9] to-transparent shadow-[0_0_12px_#229ED9] animate-laser-sweep pointer-events-none" />
               </div>
 
@@ -699,6 +792,7 @@ export default function CyberFooter() {
 
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => handleCopy('+8562054580186', 'modal')}
                   className="flex-1 py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 bg-slate-800/60 text-xs font-mono text-zinc-300 hover:text-white transition-all cursor-pointer"
                 >
@@ -711,7 +805,7 @@ export default function CyberFooter() {
                   onClick={() => cyberAudio.playClick()}
                   className="flex-1 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-xs font-space font-semibold text-slate-950 transition-all flex items-center justify-center gap-1.5 shadow-lg cursor-pointer"
                 >
-                  <span>Launch App</span>
+                  <span>Open in Telegram</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               </div>
@@ -727,6 +821,9 @@ export default function CyberFooter() {
         typeof document !== 'undefined' &&
         createPortal(
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Send Direct Message"
             onClick={() => {
               cyberAudio.playClick();
               setMessageModalOpen(false);
@@ -738,6 +835,7 @@ export default function CyberFooter() {
               className="relative w-full max-w-md cyber-panel-hud p-8 rounded-3xl border border-cyan-400/30 shadow-[0_0_50px_rgba(0,0,0,0.9),0_0_28px_rgba(0,245,255,0.18)] animate-modal-pop"
             >
               <button
+                type="button"
                 onClick={() => {
                   cyberAudio.playClick();
                   setMessageModalOpen(false);
@@ -755,7 +853,7 @@ export default function CyberFooter() {
                 </h3>
               </div>
               <p className="text-xs font-inter text-zinc-200 mb-6">
-                Leave a message and Sotheavan Pich will review and reply promptly.
+                Compose a message below to open an email draft addressed to pichsotheavan020@gmail.com.
               </p>
 
               {formSent ? (
@@ -764,10 +862,10 @@ export default function CyberFooter() {
                     <Check className="w-5 h-5 text-emerald-400" />
                   </div>
                   <h4 className="font-space font-medium text-base text-white mb-1">
-                    Message Transmitted!
+                    Email Draft Opened
                   </h4>
                   <p className="font-inter text-xs text-zinc-200">
-                    Thank you for reaching out. Sotheavan will respond to your email.
+                    Your default email client should open with your message pre-filled for pichsotheavan020@gmail.com.
                   </p>
                 </div>
               ) : (
@@ -781,7 +879,7 @@ export default function CyberFooter() {
                       required
                       value={msgData.name}
                       onChange={(e) => setMsgData({ ...msgData, name: e.target.value })}
-                      placeholder="Jane Doe"
+                      placeholder="Your name"
                       className="w-full bg-slate-950/70 border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors"
                     />
                   </div>
@@ -795,7 +893,7 @@ export default function CyberFooter() {
                       required
                       value={msgData.email}
                       onChange={(e) => setMsgData({ ...msgData, email: e.target.value })}
-                      placeholder="jane@company.com"
+                      placeholder="you@example.com"
                       className="w-full bg-slate-950/70 border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors"
                     />
                   </div>
@@ -820,7 +918,7 @@ export default function CyberFooter() {
                     className="w-full py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-space font-semibold text-xs tracking-wide shadow-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>Send Message</span>
+                    <span>Open in Email Client</span>
                   </button>
                 </form>
               )}

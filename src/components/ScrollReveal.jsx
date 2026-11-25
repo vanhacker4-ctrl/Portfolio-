@@ -28,7 +28,6 @@ export function ScrollReveal({
         opacity: 0,
         y,
         scale,
-        filter: `blur(${blur}px)`,
       };
 
   const target = prefersReduced
@@ -37,7 +36,6 @@ export function ScrollReveal({
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: 'blur(0px)',
       };
 
   return (
@@ -53,7 +51,7 @@ export function ScrollReveal({
       onAnimationComplete={() => {
         if (once) setSettled(true);
       }}
-      style={settled ? { filter: 'none', transform: 'none' } : undefined}
+      style={settled ? { transform: 'none' } : undefined}
       className={className}
     >
       {children}

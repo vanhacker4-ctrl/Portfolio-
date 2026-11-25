@@ -221,47 +221,73 @@ function CyberBentoCard({
   dimmed = false,
 }) {
   const cardRef = useRef(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0, tx: 0, ty: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+  const borderTraceRef = useRef(null);
+  const spotlightRef = useRef(null);
+  const rafRef = useRef(0);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const nx = (x / rect.width - 0.5) * 2;
-    const ny = (y / rect.height - 0.5) * 2;
+    if (!cardRef.current || rafRef.current) return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      const el = cardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const nx = (x / rect.width - 0.5) * 2;
+      const ny = (y / rect.height - 0.5) * 2;
 
-    setMousePos({ x, y });
-    setTilt({
-      rx: -ny * 3.4,
-      ry: nx * 3.4,
-      tx: nx * 3.5,
-      ty: ny * 3.5,
+      const rx = -ny * 3.4;
+      const ry = nx * 3.4;
+      const tx = nx * 3.5;
+      const ty = ny * 3.5;
+
+      el.style.transition = 'transform 0.14s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.35s ease';
+      el.style.transform = `perspective(1200px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translate3d(${tx.toFixed(1)}px, ${(ty - 4).toFixed(1)}px, 0)`;
+
+      const xPx = x.toFixed(0);
+      const yPx = y.toFixed(0);
+      if (borderTraceRef.current) {
+        borderTraceRef.current.style.background = `radial-gradient(360px circle at ${xPx}px ${yPx}px, ${accent}, rgba(255,255,255,0.1) 55%)`;
+      }
+      if (spotlightRef.current) {
+        spotlightRef.current.style.opacity = '1';
+        spotlightRef.current.style.background = `radial-gradient(460px circle at ${xPx}px ${yPx}px, ${glowColor}, transparent 62%)`;
+      }
     });
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    setTilt({ rx: 0, ry: 0, tx: 0, ty: 0 });
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (cardRef.current) {
+      cardRef.current.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease';
+      cardRef.current.style.transform = dimmed
+        ? 'perspective(1200px) scale3d(0.985, 0.985, 1)'
+        : 'perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0px, 0px, 0)';
+    }
+    if (borderTraceRef.current) {
+      borderTraceRef.current.style.background = `linear-gradient(135deg, ${accent}44 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.04) 100%)`;
+    }
+    if (spotlightRef.current) {
+      spotlightRef.current.style.opacity = '0';
+    }
   };
 
   return (
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
       style={{
-        transform: isHovered
-          ? `perspective(1200px) rotateX(${tilt.rx.toFixed(2)}deg) rotateY(${tilt.ry.toFixed(2)}deg) translate3d(${tilt.tx.toFixed(1)}px, ${(tilt.ty - 4).toFixed(1)}px, 0)`
-          : dimmed
+        transform: dimmed
           ? 'perspective(1200px) scale3d(0.985, 0.985, 1)'
           : 'perspective(1200px) rotateX(0deg) rotateY(0deg) translate3d(0px, 0px, 0)',
-        transition: isHovered
-          ? 'transform 0.14s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.35s ease'
-          : 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease',
+        transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease',
         transformStyle: 'preserve-3d',
       }}
       className={`group relative rounded-3xl p-[1px] overflow-hidden shadow-[0_24px_55px_-16px_rgba(0,0,0,0.85)] transition-opacity duration-300 ${
@@ -270,11 +296,10 @@ function CyberBentoCard({
     >
       {/* Dynamic Neon Border Trace Layer */}
       <div
+        ref={borderTraceRef}
         className="pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300"
         style={{
-          background: isHovered
-            ? `radial-gradient(360px circle at ${mousePos.x}px ${mousePos.y}px, ${accent}, rgba(255,255,255,0.1) 55%)`
-            : `linear-gradient(135deg, ${accent}44 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.04) 100%)`,
+          background: `linear-gradient(135deg, ${accent}44 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.04) 100%)`,
         }}
       />
 
@@ -293,11 +318,8 @@ function CyberBentoCard({
 
         {/* Cursor-Following Inner Spotlight */}
         <div
-          className="pointer-events-none absolute inset-0 transition-opacity duration-300 z-0"
-          style={{
-            opacity: isHovered ? 1 : 0,
-            background: `radial-gradient(460px circle at ${mousePos.x}px ${mousePos.y}px, ${glowColor}, transparent 62%)`,
-          }}
+          ref={spotlightRef}
+          className="pointer-events-none absolute inset-0 transition-opacity duration-300 z-0 opacity-0"
         />
 
         {/* Oversized Editorial Watermark Numeral */}
@@ -310,18 +332,10 @@ function CyberBentoCard({
         </div>
 
         {/* Cyber HUD Corner Brackets */}
-        <span className="pointer-events-none absolute top-3 left-3 text-[10px] font-mono text-white/25 group-hover:text-[#00F5FF]/85 transition-colors select-none z-10">
-          ⌜
-        </span>
-        <span className="pointer-events-none absolute top-3 right-3 text-[10px] font-mono text-white/25 group-hover:text-[#00F5FF]/85 transition-colors select-none z-10">
-          ⌝
-        </span>
-        <span className="pointer-events-none absolute bottom-3 left-3 text-[10px] font-mono text-white/25 group-hover:text-[#00F5FF]/85 transition-colors select-none z-10">
-          ⌞
-        </span>
-        <span className="pointer-events-none absolute bottom-3 right-3 text-[10px] font-mono text-white/25 group-hover:text-[#00F5FF]/85 transition-colors select-none z-10">
-          ⌟
-        </span>
+        <span className="pointer-events-none absolute top-3 left-3 w-2 h-2 border-t border-l border-white/25 group-hover:border-[#00F5FF]/85 transition-colors select-none z-10" aria-hidden="true" />
+        <span className="pointer-events-none absolute top-3 right-3 w-2 h-2 border-t border-r border-white/25 group-hover:border-[#00F5FF]/85 transition-colors select-none z-10" aria-hidden="true" />
+        <span className="pointer-events-none absolute bottom-3 left-3 w-2 h-2 border-b border-l border-white/25 group-hover:border-[#00F5FF]/85 transition-colors select-none z-10" aria-hidden="true" />
+        <span className="pointer-events-none absolute bottom-3 right-3 w-2 h-2 border-b border-r border-white/25 group-hover:border-[#00F5FF]/85 transition-colors select-none z-10" aria-hidden="true" />
 
         <div className="relative z-10 flex flex-col h-full">{children}</div>
       </div>
@@ -337,46 +351,46 @@ const SKILL_DETAILS = {
   react: {
     name: 'React.js (React 19)',
     category: 'Frontend Development',
-    role: 'Component State & Concurrency',
-    tag: 'REACTIVE',
+    role: 'Component State and Concurrency',
+    tag: 'REACTIVE UI',
     color: '#00D8FF',
     useCase:
-      'Architects high-frequency state trees, optimistic UI mutations, and modular component boundaries for fluid perceived latency.',
+      'Builds modular component trees, optimistic state updates, and maintainable hook architectures for responsive interfaces.',
     snippet: `const [state, setOptimistic] = useOptimistic(feed, (current, update) => [...current, update]);`,
   },
   tailwind: {
     name: 'Tailwind CSS',
     category: 'Frontend Development',
-    role: 'Design System & Micro-Interactions',
-    tag: 'DESIGN SYS',
+    role: 'Design System and Styling',
+    tag: 'DESIGN SYSTEM',
     color: '#06B6D4',
     useCase:
-      'Constructs responsive tokenized interfaces, dark glassmorphism surfaces, and hardware-accelerated animations with zero runtime overhead.',
+      'Constructs responsive design systems, dark glassmorphism surfaces, and GPU-friendly transitions with minimal CSS overhead.',
     snippet: `className="bg-[#0c1018]/90 backdrop-blur-xl border border-white/[0.08] hover:border-cyan-400/40"`,
   },
   uiux: {
     name: 'UI/UX Engineering',
-    category: 'UI/UX & Creative Design',
-    role: 'Accessibility & Spatial HUD Layouts',
-    tag: 'HUMAN INTERFACE',
+    category: 'UI/UX and Creative Design',
+    role: 'Accessibility and Spatial Layouts',
+    tag: 'ACCESSIBILITY',
     color: '#8B5CF6',
     useCase:
-      'Enforces WCAG AA contrast standards, keyboard navigation loops, responsive touch grids, and ergonomic haptic micro-interactions.',
-    snippet: `<HUDCard role="region" aria-label="Telemetry" onKeyDown={handleKeyboardLoop} tabIndex={0} />`,
+      'Applies WCAG AA contrast standards, keyboard navigation support, responsive grid layouts, and clear interaction feedback.',
+    snippet: `<HUDCard role="region" aria-label="Status Overview" onKeyDown={handleKeyNav} tabIndex={0} />`,
   },
   motion: {
-    name: 'Cinematic Motion',
-    category: 'UI/UX & Creative Design',
-    role: 'Canvas 2D/3D & Interactive Motion',
-    tag: '60FPS COMPUTE',
+    name: 'Interactive Motion',
+    category: 'UI/UX and Creative Design',
+    role: 'Animation and Scroll Transitions',
+    tag: 'FLUID MOTION',
     color: '#FF2E93',
     useCase:
-      'Drives smooth scrollytelling frame interpolation lerping and high-performance hardware-accelerated animations.',
+      'Implements smooth frame interpolation and hardware-accelerated entrance transitions that respect reduced-motion preferences.',
     snippet: `currentFrameRef.current += (targetFrame - currentFrameRef.current) * 0.12; ctx.drawImage(frame);`,
   },
   designsystems: {
-    name: 'Spatial Glass & Visual Hierarchy',
-    category: 'UI/UX & Creative Design',
+    name: 'Spatial Glass and Visual Hierarchy',
+    category: 'UI/UX and Creative Design',
     role: 'Neon Noir Design Tokens',
     tag: 'CREATIVE UI',
     color: '#F472B6',
@@ -386,8 +400,8 @@ const SKILL_DETAILS = {
   },
   python: {
     name: 'Python',
-    category: 'Python & Programming',
-    role: 'Backend Services & Automation',
+    category: 'Python and Programming',
+    role: 'Backend Services and Automation',
     tag: 'FASTAPI',
     color: '#FFE052',
     useCase:
@@ -396,7 +410,7 @@ const SKILL_DETAILS = {
   },
   typescript: {
     name: 'TypeScript',
-    category: 'Python & Programming',
+    category: 'Python and Programming',
     role: 'Contract-First Type Safety',
     tag: 'STRICT',
     color: '#3178C6',
@@ -406,7 +420,7 @@ const SKILL_DETAILS = {
   },
   javascript: {
     name: 'JavaScript (ESNext)',
-    category: 'Python & Programming',
+    category: 'Python and Programming',
     role: 'Asynchronous V8 Execution',
     tag: 'ESNEXT',
     color: '#F7DF1E',
@@ -416,8 +430,8 @@ const SKILL_DETAILS = {
   },
   cpp: {
     name: 'C / C++',
-    category: 'Python & Programming',
-    role: 'Low-Level Systems & Memory',
+    category: 'Python and Programming',
+    role: 'Low-Level Systems and Memory',
     tag: 'SYSTEMS',
     color: '#00F5FF',
     useCase:
@@ -435,7 +449,7 @@ const SKILL_DETAILS = {
     snippet: `const pipeline = stream.pipeline(readableStream, transformGzip, destinationSocket);`,
   },
   restwebsockets: {
-    name: 'REST & WebSockets',
+    name: 'REST and WebSockets',
     category: 'Backend Development',
     role: 'Full-Duplex Telemetry Broker',
     tag: 'BROKER',
@@ -447,7 +461,7 @@ const SKILL_DETAILS = {
   pythonmicroservices: {
     name: 'Python FastAPI',
     category: 'Backend Development',
-    role: 'Background Compute & ETL',
+    role: 'Background Compute and ETL',
     tag: 'PROCESSING',
     color: '#38BDF8',
     useCase:
@@ -456,8 +470,8 @@ const SKILL_DETAILS = {
   },
   ai_prompt: {
     name: 'AI Prompt Engineering',
-    category: 'AI Integration & Automation',
-    role: 'Structured Schema & Context Design',
+    category: 'AI Integration and Automation',
+    role: 'Structured Schema and Context Design',
     tag: 'PROMPT OPS',
     color: '#A855F7',
     useCase:
@@ -466,9 +480,9 @@ const SKILL_DETAILS = {
   },
   ai_workflows: {
     name: 'Automation Pipelines',
-    category: 'AI Integration & Automation',
-    role: 'Multi-Step Agentic Orchestration',
-    tag: 'AGENTS',
+    category: 'AI Integration and Automation',
+    role: 'Multi-Step Orchestration',
+    tag: 'PIPELINES',
     color: '#00F5FF',
     useCase:
       'Connects language models with local scripts, file ingestion, and webhooks to automate analysis and reporting tasks.',
@@ -476,8 +490,8 @@ const SKILL_DETAILS = {
   },
   ai_apis: {
     name: 'LLM API Integration',
-    category: 'AI Integration & Automation',
-    role: 'Streaming & Tool Calling',
+    category: 'AI Integration and Automation',
+    role: 'Streaming and Tool Calling',
     tag: 'MODEL API',
     color: '#C084FC',
     useCase:
@@ -487,7 +501,7 @@ const SKILL_DETAILS = {
   database: {
     name: 'PostgreSQL Architecture',
     category: 'Database Management',
-    role: 'Structured Persistence & Indexing',
+    role: 'Structured Persistence and Indexing',
     tag: 'PERSISTENCE',
     color: '#00F5FF',
     useCase:
@@ -497,7 +511,7 @@ const SKILL_DETAILS = {
   sql: {
     name: 'SQL',
     category: 'Database Management',
-    role: 'Relational Modeling & Query Tuning',
+    role: 'Relational Modeling and Query Tuning',
     tag: 'RELATIONAL',
     color: '#38BDF8',
     useCase:
@@ -507,7 +521,7 @@ const SKILL_DETAILS = {
   neon: {
     name: 'Neon',
     category: 'Database Management',
-    role: 'Serverless Postgres & Branching',
+    role: 'Serverless Postgres and Branching',
     tag: 'SERVERLESS PG',
     color: '#00E599',
     useCase:
@@ -516,8 +530,8 @@ const SKILL_DETAILS = {
   },
   cloudflare: {
     name: 'Cloudflare',
-    category: 'Database Management & Edge',
-    role: 'Workers, Pages, DNS & R2 Storage',
+    category: 'Database Management and Edge',
+    role: 'Workers, Pages, DNS and R2 Storage',
     tag: 'EDGE NETWORK',
     color: '#F38020',
     useCase:
@@ -526,8 +540,8 @@ const SKILL_DETAILS = {
   },
   vercel: {
     name: 'Vercel',
-    category: 'Database Management & Edge',
-    role: 'Frontend Cloud & Edge Functions',
+    category: 'Database Management and Edge',
+    role: 'Frontend Cloud and Edge Functions',
     tag: 'DEPLOYMENT',
     color: '#FFFFFF',
     useCase:
@@ -536,8 +550,8 @@ const SKILL_DETAILS = {
   },
   railway: {
     name: 'Railway',
-    category: 'Database Management & Edge',
-    role: 'Managed Containers & APIs',
+    category: 'Database Management and Edge',
+    role: 'Managed Containers and APIs',
     tag: 'BACKEND HOST',
     color: '#C084FC',
     useCase:
@@ -546,8 +560,8 @@ const SKILL_DETAILS = {
   },
   firebase: {
     name: 'Firebase',
-    category: 'Database Management & Edge',
-    role: 'Realtime Auth, Firestore & Hosting',
+    category: 'Database Management and Edge',
+    role: 'Realtime Auth, Firestore and Hosting',
     tag: 'REALTIME BAAS',
     color: '#FFA000',
     useCase:
@@ -556,8 +570,8 @@ const SKILL_DETAILS = {
   },
   supabase: {
     name: 'Supabase',
-    category: 'Database Management & Edge',
-    role: 'Postgres, Auth, Storage & RLS',
+    category: 'Database Management and Edge',
+    role: 'Postgres, Auth, Storage and RLS',
     tag: 'OPEN BAAS',
     color: '#3ECF8E',
     useCase:
@@ -593,10 +607,10 @@ export default function SkillsMatrix() {
   };
 
   const focusTabs = [
-    { id: 'all', label: 'ALL MATRIX' },
-    { id: 'frontend', label: 'FRONTEND & UX' },
-    { id: 'core', label: 'CODE & AI' },
-    { id: 'cloud', label: 'BACKEND & DB' },
+    { id: 'all', label: 'All Skills' },
+    { id: 'frontend', label: 'Frontend and UI' },
+    { id: 'core', label: 'Languages and AI' },
+    { id: 'cloud', label: 'Backend and Cloud' },
   ];
 
   const isDimmed = (group) => activeFocus !== 'all' && activeFocus !== group;
@@ -616,20 +630,20 @@ export default function SkillsMatrix() {
           <ScrollReveal y={16} blur={6} delay={0}>
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-mono text-[#00F5FF] tracking-wider flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00F5FF] animate-pulse shadow-[0_0_8px_#00F5FF]" />
-                [ 02 // TECHNICAL MATRIX ]
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F5FF] animate-pulse shadow-[0_0_8px_#00F5FF]" />
+                [ TECHNICAL SKILLS ]
               </span>
-              <span className="text-zinc-600">/</span>
-              <span className="text-xs font-mono text-zinc-400 tracking-wider uppercase">
-                Asymmetric Bento Grid
+              <span className="text-zinc-400">/</span>
+              <span className="text-xs font-mono text-zinc-300 tracking-wide">
+                Core Stack and Architecture
               </span>
             </div>
           </ScrollReveal>
           <ScrollReveal y={26} blur={10} delay={0.1}>
             <h2 className="font-space font-light text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.04]">
-              Engineering matrix. <br />
+              Technical skills. <br />
               <span className="font-normal italic bg-gradient-to-r from-white via-[#00F5FF] to-[#A855F7] bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(0,245,255,0.28)]">
-                Tactile &amp; verified.
+                Structured and applied.
               </span>
             </h2>
           </ScrollReveal>
@@ -637,8 +651,8 @@ export default function SkillsMatrix() {
 
         {/* Interactive Focus Tabs + Status */}
         <ScrollReveal y={20} blur={8} delay={0.18}>
-          <div className="flex flex-col items-start lg:items-end gap-3">
-            <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-[#080d16]/90 border border-white/[0.1] backdrop-blur-xl shadow-lg">
+          <div className="flex flex-col items-start lg:items-end gap-3 shrink-0">
+            <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 p-1.5 rounded-2xl bg-[#080d16]/90 border border-white/[0.1] backdrop-blur-xl shadow-lg">
               {focusTabs.map((tab) => {
                 const active = activeFocus === tab.id;
                 return (
@@ -650,10 +664,10 @@ export default function SkillsMatrix() {
                       setActiveFocus(tab.id);
                     }}
                     onMouseEnter={() => cyberAudio.playHover()}
-                    className={`px-3 py-1.5 rounded-xl font-mono text-[10px] tracking-wider transition-all cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-mono text-[11px] tracking-wide whitespace-nowrap transition-all cursor-pointer ${
                       active
                         ? 'bg-[#00F5FF] text-[#060b0e] font-bold shadow-[0_0_16px_rgba(0,245,255,0.4)]'
-                        : 'text-zinc-400 hover:text-white hover:bg-white/[0.05]'
+                        : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
                     }`}
                   >
                     {tab.label}
@@ -661,9 +675,9 @@ export default function SkillsMatrix() {
                 );
               })}
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400">
+            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>CLICK ANY TILE TO INSPECT LIVE ARCHITECTURE</span>
+              <span>Select any tile to inspect stack context</span>
             </div>
           </div>
         </ScrollReveal>
@@ -687,25 +701,24 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#00F5FF"
             glowColor="rgba(0, 245, 255, 0.2)"
-            watermark="01"
             dimmed={isDimmed('frontend')}
           >
             <div>
               <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.07]">
-                <span className="text-[11px] font-mono text-[#00F5FF] tracking-widest uppercase flex items-center gap-2">
+                <span className="text-[11px] font-mono text-[#00F5FF] tracking-wider flex items-center gap-2">
                   <Layout className="w-3.5 h-3.5" />
-                  <span>01 // SPATIAL CLIENT RUNTIME</span>
+                  <span>Client Interfaces</span>
                 </span>
                 <span className="text-[10px] font-mono text-cyan-300 px-2.5 py-0.5 rounded-full bg-cyan-400/10 border border-cyan-400/30">
-                  FRONTEND
+                  Frontend
                 </span>
               </div>
 
               <h3 className="font-space font-bold text-2xl sm:text-3xl text-white tracking-tight mb-2">
                 Frontend Development
               </h3>
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed max-w-xl font-normal mb-5">
-                Crafting responsive, component-driven, and accessible web experiences with modern type safety, fluid motion, and 60fps+ rendering.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed max-w-xl font-normal mb-5">
+                Building responsive, component-driven, and accessible web interfaces with clean TypeScript patterns and smooth rendering.
               </p>
 
               {/* Two Tactile Core Tiles + Live Interactive Mini Stage */}
@@ -717,7 +730,7 @@ export default function SkillsMatrix() {
                       title: 'React.js',
                       badge: 'REACT 19',
                       color: '#00D8FF',
-                      desc: 'Hooks, State & Concurrent Rendering',
+                      desc: 'Hooks, State and Concurrent Rendering',
                       Icon: ReactIcon,
                       mode: 'react',
                     },
@@ -726,7 +739,7 @@ export default function SkillsMatrix() {
                       title: 'Tailwind CSS',
                       badge: 'DESIGN SYS',
                       color: '#06B6D4',
-                      desc: 'Tokenized Glass & JIT Styling',
+                      desc: 'Design Tokens and Utility Styling',
                       Icon: TailwindIcon,
                       mode: 'glass',
                     },
@@ -770,10 +783,10 @@ export default function SkillsMatrix() {
 
                 {/* Live Interactive UI Preview Sandbox */}
                 <div className="md:col-span-6 rounded-2xl bg-[#04070d] border border-cyan-400/25 p-4 flex flex-col justify-between relative overflow-hidden min-h-[156px]">
-                  <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 pb-2 border-b border-white/[0.06]">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400 pb-2 border-b border-white/[0.06]">
                     <span className="flex items-center gap-1.5 text-cyan-300">
                       <Eye className="w-3 h-3" />
-                      <span>LIVE STAGE // {frontendPreviewMode.toUpperCase()}</span>
+                      <span>Preview: {frontendPreviewMode.toUpperCase()}</span>
                     </span>
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00F5FF] animate-ping" />
                   </div>
@@ -790,8 +803,8 @@ export default function SkillsMatrix() {
                       >
                         <div className="w-full p-3 rounded-xl bg-gradient-to-br from-cyan-400/15 to-purple-500/10 border border-white/20 backdrop-blur-md shadow-[0_8px_24px_rgba(0,245,255,0.18)]">
                           <div className="flex items-center justify-between text-[10px] font-mono text-cyan-200 mb-1.5">
-                            <span>GLASS_SURFACE</span>
-                            <span>BLUR 22PX</span>
+                            <span>Glass Surface</span>
+                            <span>Backdrop Blur</span>
                           </div>
                           <div className="h-1.5 w-3/4 rounded-full bg-gradient-to-r from-[#00F5FF] to-purple-400" />
                         </div>
@@ -839,7 +852,7 @@ export default function SkillsMatrix() {
                           />
                           <circle cx="95" cy="16" r="3.5" fill="#00F5FF" />
                         </svg>
-                        <div className="text-[9px] font-mono text-pink-300">CUBIC-BEZIER [0.16, 1, 0.3, 1]</div>
+                        <div className="text-[9px] font-mono text-pink-300">cubic-bezier(0.16, 1, 0.3, 1)</div>
                       </motion.div>
                     )}
 
@@ -853,16 +866,16 @@ export default function SkillsMatrix() {
                         className="my-auto py-2 relative flex items-center justify-center"
                       >
                         <div className="w-full p-2.5 rounded-lg border border-purple-400/40 bg-purple-500/10 flex items-center justify-between text-[9px] font-mono text-purple-200">
-                          <span>⌜ A11Y_WCAG ⌟</span>
-                          <span className="text-[#00F5FF]">FOCUS_RING: ON</span>
+                          <span>WCAG AA Contrast</span>
+                          <span className="text-[#00F5FF]">Focus Ring: On</span>
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  <div className="text-[9px] font-mono text-zinc-500 flex justify-between pt-2 border-t border-white/[0.06]">
-                    <span>60FPS HARDWARE GPU</span>
-                    <span className="text-cyan-400">ACTIVE</span>
+                  <div className="text-[9px] font-mono text-zinc-400 flex justify-between pt-2 border-t border-white/[0.06]">
+                    <span>GPU Composited</span>
+                    <span className="text-cyan-400">Active</span>
                   </div>
                 </div>
               </div>
@@ -871,7 +884,7 @@ export default function SkillsMatrix() {
             {/* Mode Switcher Bar */}
             <div className="p-3 rounded-2xl bg-[#05080d]/90 border border-cyan-400/20 flex flex-wrap items-center justify-between gap-3">
               <span className="text-[11px] font-mono text-zinc-400 pl-1">
-                SWITCH STAGE:
+                Preview Stage:
               </span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
@@ -910,25 +923,24 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#FFE052"
             glowColor="rgba(255, 224, 82, 0.18)"
-            watermark="02"
             dimmed={isDimmed('core')}
           >
             <div>
               <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.07]">
-                <span className="text-[11px] font-mono text-[#FFE052] tracking-widest uppercase flex items-center gap-2">
+                <span className="text-[11px] font-mono text-[#FFE052] tracking-wider flex items-center gap-2">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>02 // CORE LANGUAGES</span>
+                  <span>Core Languages</span>
                 </span>
                 <span className="text-[10px] font-mono text-amber-300 px-2.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30">
-                  SYSTEMS &amp; LOGIC
+                  Systems and Logic
                 </span>
               </div>
 
               <h3 className="font-space font-bold text-2xl sm:text-3xl text-white tracking-tight mb-2">
-                Python &amp; Programming
+                Python and Programming
               </h3>
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed font-normal mb-5">
-                Writing clean, type-safe, and algorithmic software spanning dynamic runtimes to low-level memory foundations.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed font-normal mb-5">
+                Writing clean, type-safe, and algorithmic software spanning dynamic runtimes and foundational memory models.
               </p>
 
               {/* 2x2 Language Matrix with Crisp Redesigned Vector Logos */}
@@ -938,7 +950,7 @@ export default function SkillsMatrix() {
                     key: 'python',
                     title: 'Python',
                     tag: 'FASTAPI',
-                    desc: 'Automation & Backend',
+                    desc: 'Automation and Backend',
                     color: '#FFE052',
                     Icon: PythonIcon,
                   },
@@ -946,7 +958,7 @@ export default function SkillsMatrix() {
                     key: 'typescript',
                     title: 'TypeScript',
                     tag: 'STRICT',
-                    desc: 'Types & Generics',
+                    desc: 'Types and Generics',
                     color: '#3B82F6',
                     Icon: TSIcon,
                   },
@@ -954,7 +966,7 @@ export default function SkillsMatrix() {
                     key: 'javascript',
                     title: 'JavaScript',
                     tag: 'ESNEXT',
-                    desc: 'Async & Web APIs',
+                    desc: 'Async and Web APIs',
                     color: '#F7DF1E',
                     Icon: JSIcon,
                   },
@@ -962,7 +974,7 @@ export default function SkillsMatrix() {
                     key: 'cpp',
                     title: 'C / C++',
                     tag: 'SYSTEMS',
-                    desc: 'Memory & Algorithms',
+                    desc: 'Memory and Algorithms',
                     color: '#00F5FF',
                     Icon: CIcon,
                   },
@@ -1028,15 +1040,14 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#10B981"
             glowColor="rgba(16, 185, 129, 0.2)"
-            watermark="03"
             dimmed={isDimmed('cloud')}
           >
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 border-b border-white/[0.07] gap-3">
                 <div>
-                  <span className="text-[11px] font-mono text-emerald-400 tracking-widest uppercase flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-mono text-emerald-400 tracking-wider flex items-center gap-2 mb-1">
                     <Server className="w-3.5 h-3.5" />
-                    <span>03 // SERVICES &amp; API ARCHITECTURE</span>
+                    <span>Services and APIs</span>
                   </span>
                   <h3 className="font-space font-bold text-2xl sm:text-3xl text-white tracking-tight">
                     Backend Development
@@ -1044,12 +1055,12 @@ export default function SkillsMatrix() {
                 </div>
                 <span className="self-start sm:self-auto text-[10px] font-mono text-emerald-300 px-2.5 py-0.5 rounded-full bg-emerald-400/10 border border-emerald-400/30 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span>STREAMING PIPELINE</span>
+                  <span>API Pipeline</span>
                 </span>
               </div>
 
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed max-w-2xl font-normal mb-7">
-                Building resilient backend services, structured RESTful API endpoints, and real-time bidirectional communication streams.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed max-w-2xl font-normal mb-7">
+                Building structured backend services, RESTful API endpoints, and real-time bidirectional communication streams.
               </p>
 
               {/* Kinetic Conduit + Traveling Neon Light Packets */}
@@ -1062,28 +1073,28 @@ export default function SkillsMatrix() {
                   {[
                     {
                       key: 'nodejs',
-                      stage: 'STAGE 01',
+                      stage: 'Stage 01',
                       title: 'Node.js',
-                      role: 'INGRESS RUNTIME',
-                      desc: 'Event Loop, Express/Node APIs & Async Streams',
+                      role: 'Ingress Runtime',
+                      desc: 'Event Loop, Express APIs and Async Streams',
                       color: '#68A063',
                       Icon: NodeIcon,
                     },
                     {
                       key: 'restwebsockets',
-                      stage: 'STAGE 02',
-                      title: 'REST & WebSockets',
-                      role: 'DUPLEX BROKER',
-                      desc: 'Structured REST Contracts & Live Socket Events',
+                      stage: 'Stage 02',
+                      title: 'REST and WebSockets',
+                      role: 'Duplex Broker',
+                      desc: 'Structured REST Contracts and Live Socket Events',
                       color: '#10B981',
                       Icon: Radio,
                     },
                     {
                       key: 'pythonmicroservices',
-                      stage: 'STAGE 03',
+                      stage: 'Stage 03',
                       title: 'Python FastAPI',
-                      role: 'COMPUTE WORKERS',
-                      desc: 'Async Services, ETL Jobs & Model Orchestration',
+                      role: 'Service Workers',
+                      desc: 'Async Endpoints, ETL Jobs and AI Orchestration',
                       color: '#38BDF8',
                       Icon: Server,
                     },
@@ -1139,25 +1150,24 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#A855F7"
             glowColor="rgba(168, 85, 247, 0.22)"
-            watermark="04"
             dimmed={isDimmed('core')}
           >
             <div>
               <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.07]">
-                <span className="text-[11px] font-mono text-purple-300 tracking-widest uppercase flex items-center gap-2">
+                <span className="text-[11px] font-mono text-purple-300 tracking-wider flex items-center gap-2">
                   <Bot className="w-3.5 h-3.5 text-purple-400" />
-                  <span>04 // NEURAL WORKFLOWS</span>
+                  <span>Applied AI</span>
                 </span>
                 <span className="text-[10px] font-mono text-purple-300 px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-400/35">
-                  APPLIED AI
+                  Automation
                 </span>
               </div>
 
               <h3 className="font-space font-bold text-2xl text-white tracking-tight mb-2">
-                AI Integration &amp; Automation
+                AI Integration and Automation
               </h3>
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed mb-5">
-                Engineering LLM-powered pipelines, structured prompt systems, and automated task workflows.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed mb-5">
+                Building LLM-powered pipelines, structured prompt workflows, and automated task orchestration.
               </p>
 
               {/* Rotating Neural Core HUD Visualizer */}
@@ -1170,8 +1180,8 @@ export default function SkillsMatrix() {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-mono text-purple-300 tracking-wider">NEURAL_CORE</div>
-                  <div className="text-[11px] font-mono text-zinc-400 truncate">LLM Orchestration</div>
+                  <div className="text-[10px] font-mono text-purple-300 tracking-wider uppercase">Applied AI Core</div>
+                  <div className="text-[11px] font-mono text-zinc-300 truncate">LLM Orchestration</div>
                 </div>
                 <div className="flex items-end gap-1 h-6 shrink-0">
                   <span className="w-1 bg-purple-400 rounded-full animate-wave-1" />
@@ -1185,7 +1195,7 @@ export default function SkillsMatrix() {
               <div className="space-y-2.5">
                 {[
                   { key: 'ai_prompt', label: 'AI Prompt Engineering', tag: 'SCHEMAS', Icon: Sparkles, color: '#A855F7' },
-                  { key: 'ai_workflows', label: 'Automation Pipelines', tag: 'AGENTS', Icon: Workflow, color: '#00F5FF' },
+                  { key: 'ai_workflows', label: 'Automation Pipelines', tag: 'PIPELINES', Icon: Workflow, color: '#00F5FF' },
                   { key: 'ai_apis', label: 'LLM API Integration', tag: 'STREAMING', Icon: Cpu, color: '#C084FC' },
                 ].map(({ key, label, tag, Icon, color }) => (
                   <motion.button
@@ -1225,30 +1235,29 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#38BDF8"
             glowColor="rgba(56, 189, 248, 0.18)"
-            watermark="05"
             dimmed={isDimmed('cloud')}
           >
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-white/[0.07]">
-                <span className="text-[11px] font-mono text-[#38BDF8] tracking-widest uppercase flex items-center gap-2">
+                <span className="text-[11px] font-mono text-[#38BDF8] tracking-wider flex items-center gap-2">
                   <Database className="w-3.5 h-3.5" />
-                  <span>05 // DATA &amp; CLOUD INFRASTRUCTURE</span>
+                  <span>Data and Cloud Infrastructure</span>
                 </span>
                 <span className="text-[10px] font-mono text-sky-300 px-2.5 py-0.5 rounded-full bg-sky-400/10 border border-sky-400/30">
-                  PERSISTENCE &amp; EDGE
+                  Storage and Edge
                 </span>
               </div>
 
               <h3 className="font-space font-bold text-2xl sm:text-3xl text-white tracking-tight mb-2">
                 Database Management
               </h3>
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed mb-5">
-                Designing normalized SQL schemas, serverless Postgres, BaaS authentication, and global edge deployment pipelines.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed mb-5">
+                Designing normalized SQL schemas, serverless PostgreSQL instances, managed auth, and cloud deployment workflows.
               </p>
 
               {/* Tier 1: Data & Persistence */}
-              <div className="text-[10px] font-mono text-sky-400/80 uppercase tracking-widest mb-2.5">
-                // DATA PERSISTENCE &amp; REALTIME
+              <div className="text-[10px] font-mono text-sky-400/90 uppercase tracking-wider mb-2.5">
+                Data Persistence and Realtime
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-4">
                 {[
@@ -1282,8 +1291,8 @@ export default function SkillsMatrix() {
               </div>
 
               {/* Tier 2: Edge & Cloud Hosting */}
-              <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2.5">
-                // EDGE &amp; CLOUD HOSTING
+              <div className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider mb-2.5">
+                Edge and Cloud Hosting
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {[
@@ -1328,40 +1337,39 @@ export default function SkillsMatrix() {
             className="p-6 sm:p-8 justify-between"
             accent="#FF2E93"
             glowColor="rgba(255, 46, 147, 0.2)"
-            watermark="06"
             dimmed={isDimmed('frontend')}
           >
             <div>
               <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.07]">
-                <span className="text-[11px] font-mono text-pink-400 tracking-widest uppercase flex items-center gap-2">
+                <span className="text-[11px] font-mono text-pink-400 tracking-wider flex items-center gap-2">
                   <Palette className="w-3.5 h-3.5" />
-                  <span>06 // INTERFACE &amp; MOTION</span>
+                  <span>Interface and Motion</span>
                 </span>
                 <span className="text-[10px] font-mono text-pink-300 px-2.5 py-0.5 rounded-full bg-pink-500/15 border border-pink-400/35">
-                  CREATIVE UX
+                  Design Systems
                 </span>
               </div>
 
               <h3 className="font-space font-bold text-2xl sm:text-3xl text-white tracking-tight mb-2">
-                UI/UX &amp; Creative Design
+                UI/UX and Creative Design
               </h3>
-              <p className="font-inter text-sm text-zinc-300/90 leading-relaxed mb-5">
-                Translating editorial typography, layered glassmorphism, and interactive motion into memorable digital products.
+              <p className="font-inter text-sm text-zinc-200 leading-relaxed mb-5">
+                Translating structured typography, layered glassmorphism, and interactive motion into clear digital products.
               </p>
 
               {/* 3D Depth Fan Stack Visual Centerpiece */}
               <div className="relative h-24 mb-5 flex items-center justify-center">
                 <div className="w-4/5 h-12 rounded-xl bg-purple-500/15 border border-purple-400/35 backdrop-blur-sm -translate-y-3 -rotate-2 group-hover:-translate-y-5 group-hover:-rotate-3 transition-all duration-300 flex items-center justify-between px-4 text-[9px] font-mono text-purple-200">
-                  <span>01 // TYPOGRAPHY</span>
-                  <span>SPACE GROTESK</span>
+                  <span>Typography</span>
+                  <span>Space Grotesk</span>
                 </div>
                 <div className="absolute w-4/5 h-12 rounded-xl bg-pink-500/15 border border-pink-400/40 backdrop-blur-md translate-y-1 rotate-1 group-hover:translate-y-2 group-hover:rotate-2 transition-all duration-300 flex items-center justify-between px-4 text-[9px] font-mono text-pink-200">
-                  <span>02 // GLASS DEPTH</span>
-                  <span>NEON NOIR</span>
+                  <span>Visual Depth</span>
+                  <span>Glassmorphism</span>
                 </div>
                 <div className="absolute w-4/5 h-12 rounded-xl bg-[#070b14]/90 border border-[#00F5FF]/50 backdrop-blur-xl translate-y-5 group-hover:translate-y-8 transition-all duration-300 shadow-[0_10px_24px_rgba(0,0,0,0.65)] flex items-center justify-between px-4 text-[9px] font-mono text-cyan-300">
-                  <span>03 // MOTION ENGINE</span>
-                  <span>60FPS LERP</span>
+                  <span>Motion System</span>
+                  <span>Frame Interpolation</span>
                 </div>
               </div>
 
@@ -1369,8 +1377,8 @@ export default function SkillsMatrix() {
               <div className="space-y-2 pt-3">
                 {[
                   { key: 'uiux', title: 'UI/UX Engineering', badge: 'WCAG AA', color: '#8B5CF6', Icon: Layers },
-                  { key: 'motion', title: 'Cinematic Motion', badge: '60FPS', color: '#FF2E93', Icon: Sparkles },
-                  { key: 'designsystems', title: 'Glass & Visual Systems', badge: 'TOKENS', color: '#F472B6', Icon: Palette },
+                  { key: 'motion', title: 'Interactive Motion', badge: 'GPU MOTION', color: '#FF2E93', Icon: Sparkles },
+                  { key: 'designsystems', title: 'Glass and Visual Systems', badge: 'TOKENS', color: '#F472B6', Icon: Palette },
                 ].map(({ key, title, badge, color, Icon }) => (
                   <motion.button
                     key={key}
@@ -1408,22 +1416,22 @@ export default function SkillsMatrix() {
           <div className="relative overflow-hidden rounded-3xl cyber-panel-hud border border-emerald-400/20 p-5 sm:p-6">
             <div className="pointer-events-none absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2.5 text-xs font-mono text-emerald-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2.5 text-xs font-mono text-emerald-400 tracking-wider">
                 <Globe className="w-4 h-4" />
-                <span>GLOBAL COMMUNICATION // SPOKEN LANGUAGES</span>
+                <span>Communication: Spoken Languages</span>
               </div>
-              <span className="text-[11px] font-mono text-zinc-400">
-                Cross-cultural collaboration across Southeast Asian &amp; international tech teams
+              <span className="text-[11px] font-mono text-zinc-300">
+                Multilingual collaboration across regional and international teams
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {[
-                { name: 'Khmer', code: 'KH', accent: '#00F5FF', note: 'Native Proficiency' },
-                { name: 'English', code: 'EN', accent: '#10B981', note: 'Technical & Professional' },
-                { name: 'Lao', code: 'LA', accent: '#38BDF8', note: 'Regional Communication' },
-                { name: 'Chinese', code: 'ZH', accent: '#F59E0B', note: 'Conversational & Study' },
-                { name: 'Spanish', code: 'ES', accent: '#A855F7', note: 'Learning & Practice' },
+                { name: 'Khmer', code: 'KH', accent: '#00F5FF', note: 'Native' },
+                { name: 'English', code: 'EN', accent: '#10B981', note: 'Professional' },
+                { name: 'Lao', code: 'LA', accent: '#38BDF8', note: 'Working' },
+                { name: 'Chinese', code: 'ZH', accent: '#F59E0B', note: 'Conversational' },
+                { name: 'Spanish', code: 'ES', accent: '#A855F7', note: 'Elementary' },
               ].map((lang) => (
                 <div
                   key={lang.name}
@@ -1460,12 +1468,12 @@ export default function SkillsMatrix() {
           <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-5 border-b border-white/[0.06] gap-2">
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-[#00F5FF] animate-pulse shadow-[0_0_8px_#00F5FF]" />
-              <span className="text-xs font-mono text-cyan-300 uppercase tracking-widest">
-                CYBERDECK // ARCHITECTURE INSPECTOR
+              <span className="text-xs font-mono text-cyan-300 tracking-wider">
+                Stack Inspector: Technical Context
               </span>
             </div>
-            <div className="text-[11px] font-mono text-zinc-400">
-              CLICK ANY TILE ABOVE TO STREAM REAL ENGINEERING CONTEXT
+            <div className="text-[11px] font-mono text-zinc-300">
+              Select any technology tile above to inspect usage details
             </div>
           </div>
 
@@ -1504,8 +1512,8 @@ export default function SkillsMatrix() {
 
               <div className="lg:col-span-6">
                 <div className="relative rounded-2xl bg-[#04070c] border border-cyan-400/25 p-4 overflow-hidden shadow-[inset_0_0_24px_rgba(0,245,255,0.05)]">
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.06] text-[10px] font-mono text-zinc-500">
-                    <span className="text-cyan-400/85">&gt; ARCHITECTURE CODE SAMPLE</span>
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.06] text-[10px] font-mono text-zinc-400">
+                    <span className="text-cyan-400/90 uppercase tracking-wider">Code Example</span>
                     <button
                       type="button"
                       onClick={handleCopySnippet}
@@ -1514,12 +1522,12 @@ export default function SkillsMatrix() {
                       {copiedSnippet ? (
                         <>
                           <Check className="w-3 h-3 text-emerald-400" />
-                          <span className="text-emerald-400">COPIED</span>
+                          <span className="text-emerald-400">Copied</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3 h-3" />
-                          <span>COPY SNIPPET</span>
+                          <span>Copy Snippet</span>
                         </>
                       )}
                     </button>

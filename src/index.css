@@ -54,15 +54,16 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Subtle Ambient Gradient Background */
+/* Subtle Ambient Gradient Background (GPU-friendly soft mask without blur rasterization) */
 .ambient-glow {
   position: absolute;
-  width: 600px;
-  height: 600px;
+  width: 680px;
+  height: 680px;
   border-radius: 50%;
-  filter: blur(140px);
+  -webkit-mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.42) 38%, transparent 70%);
+  mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.42) 38%, transparent 70%);
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.14;
 }
 
 /* Infinite Tech Marquee */
@@ -413,4 +414,29 @@ section p {
 
 .animate-packet-stream {
   animation: packetStream 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Lighter glass blur on mobile GPUs to preserve 60fps scroll */
+@media (max-width: 767px) {
+  .luxury-glass,
+  .cyber-panel-hud {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* Honor OS prefers-reduced-motion for all CSS keyframe animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-tech-marquee,
+  .animate-shimmer,
+  .animate-float,
+  .animate-laser-sweep,
+  .animate-packet-stream,
+  .animate-wave-1,
+  .animate-wave-2,
+  .animate-wave-3,
+  .animate-wave-4,
+  .animate-wave-5 {
+    animation: none !important;
+  }
 }

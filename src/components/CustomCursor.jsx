@@ -30,10 +30,11 @@ export default function CustomCursor() {
   });
 
   useEffect(() => {
-    // Skip on coarse-pointer / touch devices
+    // Skip on coarse-pointer / touch devices or reduced-motion preference
     if (
       typeof window !== 'undefined' &&
       (window.matchMedia('(pointer: coarse)').matches ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0)
     ) {
@@ -44,15 +45,26 @@ export default function CustomCursor() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    let viewW = window.innerWidth;
+    let viewH = window.innerHeight;
+    let animId = 0;
 
     const handleResize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      viewW = window.innerWidth;
+      viewH = window.innerHeight;
+      canvas.width = Math.round(viewW * dpr);
+      canvas.height = Math.round(viewH * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     handleResize();
     window.addEventListener('resize', handleResize, { passive: true });
+
+    const wakeRender = () => {
+      if (!animId && !document.hidden) {
+        animId = requestAnimationFrame(render);
+      }
+    };
 
     const handleMouseMove = (e) => {
       const state = stateRef.current;
@@ -80,6 +92,8 @@ export default function CustomCursor() {
         life: 1,
       });
       if (state.trail.length > 14) state.trail.pop();
+
+      wakeRender();
 
       // Detect interactive hover target & magnetic pull center
       const target = e.target;
@@ -148,6 +162,7 @@ export default function CustomCursor() {
         alpha: 0.65,
       });
 
+      wakeRender();
       cyberAudio.playClick();
     };
 
@@ -162,10 +177,16 @@ export default function CustomCursor() {
       if (dotRef.current) dotRef.current.style.opacity = '0';
       if (ringRef.current) ringRef.current.style.opacity = '0';
       if (spotlightRef.current) spotlightRef.current.style.opacity = '0';
+      wakeRender();
     };
 
     const handleMouseEnter = () => {
       stateRef.current.isVisible = true;
+      wakeRender();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) wakeRender();
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
@@ -173,10 +194,11 @@ export default function CustomCursor() {
     window.addEventListener('mouseup', handleMouseUp, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    let animId;
-
-    const render = () => {
+    function render() {
+      animId = 0;
+      if (document.hidden) return;
       const state = stateRef.current;
       const { mouse, ring, spotlight, isVisible, isHovering, magneticTarget } = state;
 
@@ -225,9 +247,7 @@ export default function CustomCursor() {
       }
 
       // Render smooth minimal quadratic trail & click ripple on canvas
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0, 0, viewW, viewH);
 
       if (isVisible) {
         ctx.save();
@@ -254,6 +274,9 @@ export default function CustomCursor() {
             }
           }
           state.trail = state.trail.filter((p) => p.life > 0.05);
+        } else if (state.trail.length > 0) {
+          state.trail[0].life -= 0.1;
+          if (state.trail[0].life <= 0.05) state.trail.length = 0;
         }
 
         // 2. Refined single obsidian ripple on click
@@ -274,12 +297,19 @@ export default function CustomCursor() {
         }
 
         ctx.restore();
+      } else {
+        state.trail.length = 0;
+        state.ripples.length = 0;
       }
 
-      animId = requestAnimationFrame(render);
-    };
+      const ringSettled = Math.hypot(targetX - ring.x, targetY - ring.y) < 0.2;
+      const spotSettled = Math.hypot(mouse.x - spotlight.x, mouse.y - spotlight.y) < 0.5;
+      const canvasActive = state.trail.length > 0 || state.ripples.length > 0;
 
-    animId = requestAnimationFrame(render);
+      if (canvasActive || (isVisible && (!ringSettled || !spotSettled))) {
+        animId = requestAnimationFrame(render);
+      }
+    }
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -288,7 +318,8 @@ export default function CustomCursor() {
       window.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
-      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (animId) cancelAnimationFrame(animId);
     };
   }, []);
 
@@ -302,7 +333,7 @@ export default function CustomCursor() {
         className="fixed top-0 left-0 pointer-events-none z-[1] -translate-x-1/2 -translate-y-1/2 will-change-transform transition-opacity duration-300 opacity-0"
         style={{ width: '580px', height: '580px' }}
       >
-        <div className="w-full h-full rounded-full bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.065)_0%,rgba(16,185,129,0.025)_38%,transparent_70%)] blur-2xl" />
+        <div className="w-full h-full rounded-full bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.065)_0%,rgba(16,185,129,0.025)_38%,transparent_70%)]" />
       </div>
 
       {/* 2. Canvas: Silky Fluid Trail & Click Ripple */}

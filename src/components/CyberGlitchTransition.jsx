@@ -6,13 +6,14 @@ const SWITCH_AT_MS = 240;      // Scroll/route switch at peak digital veil
 
 const ROUTE_LABELS = {
   '#hero': 'OVERVIEW',
-  '#about': 'ABOUT ME',
+  '#about': 'ABOUT',
   '#skills': 'TECHNICAL SKILLS',
   '#exploring': 'CURRENTLY EXPLORING',
   '#projects': 'SELECTED PROJECTS',
+  '#github': 'GITHUB ACTIVITY',
   '#timeline': 'LEARNING JOURNEY',
   '#cv': 'CURRICULUM VITAE',
-  '#contact': 'CONTACT TERMINAL',
+  '#contact': 'CONTACT',
 };
 
 const DISTORTION_SLICES = [
@@ -274,7 +275,7 @@ export default function CyberGlitchTransition({
             <div className="relative inline-flex items-center justify-center">
               {/* Cyan Split Ghost */}
               <span
-                className="absolute inset-0 font-space font-black text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-[#00F5FF] mix-blend-screen cyber-rgb-right"
+                className="absolute inset-0 font-space font-bold text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-[#00F5FF] mix-blend-screen cyber-rgb-right"
                 aria-hidden="true"
               >
                 SOTHEVAN
@@ -282,14 +283,14 @@ export default function CyberGlitchTransition({
 
               {/* Magenta / Purple Split Ghost */}
               <span
-                className="absolute inset-0 font-space font-black text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-[#A855F7] mix-blend-screen cyber-rgb-left"
+                className="absolute inset-0 font-space font-bold text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-[#A855F7] mix-blend-screen cyber-rgb-left"
                 aria-hidden="true"
               >
                 SOTHEVAN
               </span>
 
               {/* Crisp Core Brand Text */}
-              <span className="relative font-space font-black text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-white drop-shadow-[0_0_24px_rgba(0,245,255,0.45)]">
+              <span className="relative font-space font-bold text-3xl sm:text-6xl lg:text-7xl tracking-[0.16em] sm:tracking-[0.22em] text-white drop-shadow-[0_0_24px_rgba(0,245,255,0.45)]">
                 SOTHEVAN
               </span>
             </div>
@@ -329,16 +330,15 @@ export function CyberSectionReveal({ id, children, className = '' }) {
         return;
       }
 
-      controls.set({ opacity: 0.2, y: 18, filter: 'blur(5px)' });
+      controls.set({ opacity: 0.2, y: 18 });
       controls
         .start({
           opacity: 1,
           y: 0,
-          filter: 'blur(0px)',
           transition: { duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] },
         })
         .then(() => {
-          controls.set({ filter: 'none', transform: 'none' });
+          controls.set({ transform: 'none' });
         });
     };
 

@@ -17,29 +17,46 @@ import { ScrollReveal, ScrollDivider } from './ScrollReveal';
 
 function TiltExploreCard({ children, accent = '#00F5FF', className = '' }) {
   const cardRef = useRef(null);
-  const [transform, setTransform] = useState('');
-  const [spotlight, setSpotlight] = useState({ x: 0, y: 0, opacity: 0 });
+  const spotlightRef = useRef(null);
+  const rafRef = useRef(0);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    if (!cardRef.current || rafRef.current) return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      const el = cardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
 
-    const rotateX = ((y - centerY) / centerY) * -4.5;
-    const rotateY = ((x - centerX) / centerX) * 4.5;
+      const rotateX = ((y - centerY) / centerY) * -4.5;
+      const rotateY = ((x - centerX) / centerX) * 4.5;
 
-    setTransform(
-      `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px) scale3d(1.015, 1.015, 1.015)`
-    );
-    setSpotlight({ x, y, opacity: 1 });
+      el.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px) scale3d(1.015, 1.015, 1.015)`;
+      if (spotlightRef.current) {
+        spotlightRef.current.style.opacity = '1';
+        spotlightRef.current.style.background = `radial-gradient(380px circle at ${x.toFixed(0)}px ${y.toFixed(0)}px, ${accent}24, transparent 65%)`;
+      }
+    });
   };
 
   const handleMouseLeave = () => {
-    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale3d(1, 1, 1)');
-    setSpotlight((prev) => ({ ...prev, opacity: 0 }));
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (cardRef.current) {
+      cardRef.current.style.transform =
+        'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale3d(1, 1, 1)';
+    }
+    if (spotlightRef.current) {
+      spotlightRef.current.style.opacity = '0';
+    }
   };
 
   return (
@@ -49,7 +66,6 @@ function TiltExploreCard({ children, accent = '#00F5FF', className = '' }) {
       onMouseLeave={handleMouseLeave}
       onMouseEnter={() => cyberAudio.playHover()}
       style={{
-        transform,
         transition:
           'transform 0.18s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.35s ease, border-color 0.3s ease',
         transformStyle: 'preserve-3d',
@@ -66,26 +82,15 @@ function TiltExploreCard({ children, accent = '#00F5FF', className = '' }) {
 
       {/* Dynamic Cursor Spotlight */}
       <div
-        className="pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 z-0"
-        style={{
-          opacity: spotlight.opacity,
-          background: `radial-gradient(380px circle at ${spotlight.x}px ${spotlight.y}px, ${accent}24, transparent 65%)`,
-        }}
+        ref={spotlightRef}
+        className="pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 z-0 opacity-0"
       />
 
       {/* Cyberpunk HUD Corner Brackets */}
-      <span className="absolute top-2.5 left-2.5 text-[10px] font-mono text-cyan-400/25 group-hover:text-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10">
-        ⌜
-      </span>
-      <span className="absolute top-2.5 right-2.5 text-[10px] font-mono text-cyan-400/25 group-hover:text-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10">
-        ⌝
-      </span>
-      <span className="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-cyan-400/25 group-hover:text-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10">
-        ⌞
-      </span>
-      <span className="absolute bottom-2.5 right-2.5 text-[10px] font-mono text-cyan-400/25 group-hover:text-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10">
-        ⌟
-      </span>
+      <span className="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-cyan-400/25 group-hover:border-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10" aria-hidden="true" />
+      <span className="absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-cyan-400/25 group-hover:border-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10" aria-hidden="true" />
+      <span className="absolute bottom-2.5 left-2.5 w-2 h-2 border-b border-l border-cyan-400/25 group-hover:border-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10" aria-hidden="true" />
+      <span className="absolute bottom-2.5 right-2.5 w-2 h-2 border-b border-r border-cyan-400/25 group-hover:border-[#00F5FF]/75 transition-colors select-none pointer-events-none z-10" aria-hidden="true" />
 
       <div className="relative z-10 flex flex-col justify-between h-full">{children}</div>
     </div>
@@ -124,7 +129,7 @@ export default function CurrentlyExploring() {
       accent: '#00F5FF',
       icon: Cpu,
       description:
-        'Designing intelligent automation scripts, multi-step prompt pipelines, and agent-assisted workflows to eliminate repetitive engineering bottlenecks.',
+        'Building automation scripts, multi-step prompt pipelines, and integrated tools to streamline repetitive engineering tasks.',
       focusAreas: ['Prompt Pipelines', 'Workflow Orchestration', 'Script Automation'],
     },
     {
@@ -135,7 +140,7 @@ export default function CurrentlyExploring() {
       accent: '#8B5CF6',
       icon: Globe2,
       description:
-        'Tracking the bleeding edge of the web ecosystem, including modern React paradigms, performant state architectures, and Web APIs.',
+        'Exploring modern web standards, React patterns, performant state management, and browser APIs.',
       focusAreas: ['React Ecosystem', 'Component Architectures', 'Web Performance'],
     },
     {
@@ -186,17 +191,17 @@ export default function CurrentlyExploring() {
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono text-[#00F5FF] tracking-wider flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00F5FF] animate-pulse shadow-[0_0_8px_#00F5FF]" />
-                [ CURRENT INTERESTS ]
+                [ CURRENTLY EXPLORING ]
               </span>
               <span className="text-zinc-400">/</span>
-              <span className="text-xs font-mono text-zinc-200 tracking-wider uppercase">
-                Active Research &amp; Learning Horizons
+              <span className="text-xs font-mono text-zinc-300 tracking-wide">
+                Active Learning Tracks
               </span>
             </div>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] font-mono text-[10px] tracking-widest text-zinc-200">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] font-mono text-[10px] tracking-wider text-zinc-200">
               <span className="text-[#00F5FF]">7</span>
-              <span>ACTIVE TRACKS</span>
+              <span>Active Tracks</span>
             </div>
           </div>
         </ScrollReveal>
@@ -212,7 +217,7 @@ export default function CurrentlyExploring() {
 
         <ScrollReveal y={20} blur={8} delay={0.18}>
           <p className="font-inter text-sm sm:text-base text-zinc-200 mt-4 max-w-2xl font-normal leading-relaxed">
-            Disciplines, technical paradigms, and emerging concepts I am actively researching, experimenting with, and incorporating into my daily engineering practice.
+            Engineering disciplines, design paradigms, and emerging tools I am actively researching, testing, and applying in practical projects.
           </p>
         </ScrollReveal>
         <ScrollDivider className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-[#8B5CF6]/45 via-white/[0.08] to-transparent" delay={0.16} />
@@ -237,8 +242,8 @@ export default function CurrentlyExploring() {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
                     <div className="lg:col-span-7 space-y-4">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[11px] font-mono text-zinc-200 tracking-wider">
-                          [ RESEARCH FOCUS ]
+                        <span className="text-[11px] font-mono text-zinc-300 tracking-wider">
+                          [ ACTIVE TRACK ]
                         </span>
                         <span
                           className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]"
@@ -270,10 +275,10 @@ export default function CurrentlyExploring() {
 
                     <div className="lg:col-span-5 p-5 rounded-2xl bg-[#05080d]/70 border border-white/[0.07]">
                       <div className="flex items-center justify-between text-[10px] font-mono text-zinc-300 uppercase tracking-wider mb-3 pb-2 border-b border-white/[0.06]">
-                        <span>AREAS OF FOCUS</span>
+                        <span>Areas of Focus</span>
                         <span className="text-emerald-400 flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          HORIZON ACTIVE
+                          Active
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -305,8 +310,8 @@ export default function CurrentlyExploring() {
                 <div>
                   {/* Meta Row */}
                   <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.06]">
-                    <span className="text-[11px] font-mono text-zinc-200 uppercase tracking-wider">
-                      [ RESEARCH FOCUS ]
+                    <span className="text-[11px] font-mono text-zinc-300 tracking-wider">
+                      [ ACTIVE TRACK ]
                     </span>
                     <span
                       className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.06]"

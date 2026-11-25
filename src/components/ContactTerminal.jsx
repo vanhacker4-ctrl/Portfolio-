@@ -88,7 +88,7 @@ export default function ContactTerminal() {
   const topicOptions = [
     'Internship / Junior Role',
     'Software Collaboration',
-    'AI & Automation Project',
+    'AI and Automation Project',
     'General Networking',
   ];
 
@@ -157,7 +157,7 @@ export default function ContactTerminal() {
       case 'about':
         newHistory.push({
           type: 'output',
-          text: 'PROFILE:\nSotheavan Pich — Second-Year Programming Student & Scholarship Recipient.\nFull-Stack Developer | AI Enthusiast.\nFocus: Modern Web Architectures, Applied AI, Systems Exploration.',
+          text: 'PROFILE:\nSotheavan Pich — Second-Year Programming Student and Scholarship Recipient.\nFull-Stack Developer | AI Enthusiast.\nFocus: Modern Web Architectures, Applied AI, Systems Exploration.',
         });
         break;
       case 'clear':
@@ -202,7 +202,7 @@ export default function ContactTerminal() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xs font-mono text-[#00F5FF] tracking-wider uppercase">
-              [ DIRECT CONTACT &amp; CONNECT ]
+              [ DIRECT CONTACT ]
             </span>
             <span className="text-zinc-600">/</span>
             <span className="text-xs font-mono text-zinc-400 tracking-wider uppercase">
@@ -248,7 +248,7 @@ export default function ContactTerminal() {
                   Sotheavan Pich
                 </h3>
                 <p className="text-xs font-mono text-cyan-400 mt-1">
-                  Full-Stack Developer &amp; Student
+                  Full-Stack Developer and Student
                 </p>
               </div>
               <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-400 font-medium">

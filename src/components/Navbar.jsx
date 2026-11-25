@@ -11,10 +11,18 @@ export default function Navbar({
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      const next = window.scrollY > 40;
+      setScrolled((prev) => (prev === next ? prev : next));
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const navLinks = [
@@ -22,9 +30,8 @@ export default function Navbar({
     { label: 'About', href: '#about', id: 'about' },
     { label: 'Skills', href: '#skills', id: 'skills' },
     { label: 'Exploring', href: '#exploring', id: 'exploring' },
-    { label: 'Work', href: '#projects', id: 'projects' },
+    { label: 'Projects', href: '#projects', id: 'projects' },
     { label: 'Journey', href: '#timeline', id: 'timeline' },
-    { label: 'CV', href: '#cv', id: 'cv' },
     { label: 'Contact', href: '#contact', id: 'contact' },
   ];
 
@@ -58,14 +65,11 @@ export default function Navbar({
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00F5FF] shadow-[0_0_12px_#00F5FF] group-hover:scale-125 transition-transform" />
           </span>
           <div>
-            <div className="font-space font-semibold text-base tracking-tight text-white group-hover:text-[#00F5FF] transition-colors whitespace-nowrap flex items-center gap-2">
-              <span>Developer Profile</span>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-cyan-400/10 border border-cyan-400/25 text-[9px] font-mono text-cyan-300 tracking-widest">
-                HUD
-              </span>
+            <div className="font-space font-semibold text-base tracking-tight text-white group-hover:text-[#00F5FF] transition-colors whitespace-nowrap">
+              <span>Sotheavan Pich</span>
             </div>
-            <div className="text-[11px] font-mono text-zinc-200 tracking-wider whitespace-nowrap">
-              Full-Stack &amp; AI Explorer
+            <div className="text-[11px] font-mono text-zinc-300 tracking-wide whitespace-nowrap">
+              Full-Stack and AI Developer
             </div>
           </div>
         </a>
@@ -83,7 +87,7 @@ export default function Navbar({
                   handleNavClick(link.href);
                 }}
                 onMouseEnter={() => cyberAudio.playHover()}
-                className={`relative px-3.5 py-1.5 text-xs font-mono tracking-wide rounded-full border transition-all duration-300 ${
+                className={`relative px-2.5 xl:px-3.5 py-1.5 text-xs font-mono tracking-wide rounded-full border transition-all duration-300 whitespace-nowrap ${
                   isActive
                     ? 'text-cyan-300 bg-cyan-400/[0.12] border-cyan-400/40 shadow-[0_0_18px_rgba(0,245,255,0.22)]'
                     : 'text-zinc-200 border-transparent hover:text-white hover:bg-white/[0.05]'
@@ -103,29 +107,32 @@ export default function Navbar({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_8px_#10B981]" />
             </span>
-            <span>Open for collaborations</span>
+            <span>Open to Collaboration</span>
           </div>
 
           {/* Futuristic Neon Contact CTA Button */}
           <button
+            type="button"
             onClick={() => handleNavClick('#contact')}
             onMouseEnter={() => cyberAudio.playHover()}
             data-cursor="CONTACT"
             className="group relative overflow-hidden hidden sm:inline-flex items-center gap-2 px-4 py-2 text-xs font-mono font-semibold tracking-wider uppercase rounded-lg bg-gradient-to-r from-cyan-400/20 to-emerald-400/15 hover:from-cyan-400/30 hover:to-emerald-400/25 border border-cyan-400/55 hover:border-cyan-300 text-white shadow-[0_0_20px_rgba(0,245,255,0.18)] hover:shadow-[0_0_28px_rgba(0,245,255,0.4)] transition-all duration-300 cursor-pointer whitespace-nowrap shrink-0 active:scale-95"
           >
             <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 animate-shimmer transition-opacity" />
-            <span className="relative z-10">Let&apos;s talk</span>
+            <span className="relative z-10">Get in Touch</span>
             <ArrowUpRight className="relative z-10 w-3.5 h-3.5 text-cyan-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </button>
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={() => {
               cyberAudio.playClick();
               setMobileMenuOpen(!mobileMenuOpen);
             }}
             className="lg:hidden p-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:text-cyan-300 hover:border-cyan-400/40 transition-colors"
             aria-label="Toggle Navigation"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -137,7 +144,7 @@ export default function Navbar({
         <div className="lg:hidden bg-[#060b0e]/95 backdrop-blur-2xl border-b border-cyan-400/20 px-8 py-8 animate-fadeIn">
           <div className="flex flex-col gap-3">
             <div className="text-[11px] font-mono uppercase text-cyan-400/90 tracking-widest pb-2 border-b border-white/[0.08]">
-              NAVIGATION MATRIX
+              Navigation
             </div>
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
@@ -161,9 +168,9 @@ export default function Navbar({
             <div className="pt-6 mt-4 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-zinc-200">
               <span className="flex items-center gap-2 text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Open for collaborations
+                Open to Collaboration
               </span>
-              <span className="text-cyan-400/90">SOTHEAVAN &bull; 2026</span>
+              <span className="text-cyan-400/90">Sotheavan &bull; 2026</span>
             </div>
           </div>
         </div>

@@ -8,9 +8,9 @@ export default function TimelineSection() {
     {
       index: '01',
       period: 'Current Academic Focus',
-      role: 'Programming Education & Foundations',
+      role: 'Programming Education and Foundations',
       category: 'Academic Journey',
-      institution: 'Computer Science Curriculum • Second-Year Student',
+      institution: 'Second-Year Computer Science Student',
       icon: GraduationCap,
       accent: '#00F5FF',
       current: true,
@@ -25,7 +25,7 @@ export default function TimelineSection() {
       index: '02',
       period: 'Academic Recognition',
       role: 'Scholarship Recipient',
-      category: 'Honors & Achievement',
+      category: 'Honors and Achievement',
       institution: 'Academic Merit Scholarship',
       icon: Award,
       accent: '#8B5CF6',
@@ -56,9 +56,9 @@ export default function TimelineSection() {
     {
       index: '04',
       period: 'Full-Stack Immersion',
-      role: 'Frontend & Backend Development Practice',
+      role: 'Frontend and Backend Development Practice',
       category: 'Technical Practice',
-      institution: 'React, TypeScript, Node.js & Python Ecosystems',
+      institution: 'React, TypeScript, Node.js and Python Ecosystems',
       icon: Server,
       accent: '#8B5CF6',
       current: false,
@@ -74,7 +74,7 @@ export default function TimelineSection() {
       period: 'Intelligent Systems',
       role: 'AI Automation Experiments',
       category: 'Applied Research',
-      institution: 'Prompt Engineering & AI Workflow Integrations',
+      institution: 'Prompt Engineering and AI Workflow Integrations',
       icon: Sparkles,
       accent: '#00F5FF',
       current: false,
@@ -88,9 +88,9 @@ export default function TimelineSection() {
     {
       index: '06',
       period: 'Continuous Habit',
-      role: 'Technology Research & Self-Learning',
+      role: 'Technology Research and Self-Learning',
       category: 'Continuous Learning',
-      institution: 'Emerging Frameworks, Tools & Documentation',
+      institution: 'Emerging Frameworks, Tools and Documentation',
       icon: BookOpen,
       accent: '#10B981',
       current: true,
@@ -116,33 +116,33 @@ export default function TimelineSection() {
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono text-[#00F5FF] tracking-wider flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00F5FF] animate-pulse shadow-[0_0_8px_#00F5FF]" />
-                [ EXPERIENCE &amp; JOURNEY ]
+                [ LEARNING JOURNEY ]
               </span>
               <span className="text-zinc-400">/</span>
-              <span className="text-xs font-mono text-zinc-200 tracking-wider uppercase">
-                Development Milestones &amp; Learning Journey
+              <span className="text-xs font-mono text-zinc-300 tracking-wide">
+                Academic and Engineering Milestones
               </span>
             </div>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] font-mono text-[10px] tracking-widest text-zinc-200">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] font-mono text-[10px] tracking-wider text-zinc-200">
               <span className="text-[#00F5FF]">6</span>
-              <span>MILESTONES</span>
+              <span>Milestones</span>
             </div>
           </div>
         </ScrollReveal>
 
         <ScrollReveal y={26} blur={10} delay={0.1}>
           <h2 className="font-space font-light text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.04]">
-            Experience &amp; <br />
+            Academic and <br />
             <span className="font-normal italic bg-gradient-to-r from-white via-purple-300 to-[#00F5FF] bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(0,245,255,0.22)]">
-              learning journey.
+              engineering journey.
             </span>
           </h2>
         </ScrollReveal>
 
         <ScrollReveal y={20} blur={8} delay={0.18}>
           <p className="font-inter text-sm sm:text-base text-zinc-200 mt-4 max-w-2xl font-normal leading-relaxed">
-            An authentic timeline of my computer science education, scholarship recognition, software development practice, and ongoing research into emerging technologies.
+            A chronological overview of my computer science coursework, scholarship recognition, software projects, and ongoing technical learning.
           </p>
         </ScrollReveal>
         <ScrollDivider className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-[#00F5FF]/45 via-white/[0.08] to-transparent" delay={0.16} />
@@ -207,9 +207,7 @@ export default function TimelineSection() {
                   />
 
                   {/* Corner HUD Brackets */}
-                  <span className="pointer-events-none absolute top-2.5 right-2.5 text-[10px] font-mono text-white/15 group-hover:text-cyan-400/70 transition-colors select-none">
-                    ⌝
-                  </span>
+                  <span className="pointer-events-none absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-white/15 group-hover:border-cyan-400/70 transition-colors select-none" aria-hidden="true" />
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start relative z-10">
                     {/* Period & Category */}

@@ -4,15 +4,27 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Activity, Mail, MessageCircle, Send, Share2, X, Maximize2 } from 'lucide-react';
 import { cyberAudio } from '../utils/cyberAudio';
 import { navigateWithGlitch } from '../utils/cyberNavigation';
+import { GITHUB_CONFIG } from '../config/github';
+
+const GitHubNavIcon = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+    />
+  </svg>
+);
 
 const CINEMATIC_EASE = [0.16, 1, 0.3, 1];
 
 const HERO_CARDS = [
   {
     id: 'code-matrix',
-    title: 'CODE_MATRIX • PYTHON',
+    title: 'Python Workflow',
     src: '/images/hero-code-matrix.jpg',
-    alt: 'Code Matrix Python',
+    webpSrc: '/images/hero-code-matrix.webp',
+    alt: 'Python Workflow Illustration',
     // Upper-left: completely clear of the face, floating in the left margin space
     positionClass: 'top-2 sm:top-5 -left-1 sm:-left-6 lg:-left-12',
     wClass: 'w-28 sm:w-36 lg:w-40',
@@ -21,9 +33,10 @@ const HERO_CARDS = [
   },
   {
     id: 'neural-dna',
-    title: 'NEURAL_DNA • SYNTHESIS',
+    title: 'Neural Systems',
     src: '/images/hero-neural-dna.jpg',
-    alt: 'Neural DNA Synthesis',
+    webpSrc: '/images/hero-neural-dna.webp',
+    alt: 'Neural Systems Illustration',
     // Upper-right: completely clear of the hair, floating in the top-right corner
     positionClass: 'top-2 sm:top-5 -right-1 sm:-right-4 lg:-right-10',
     wClass: 'w-28 sm:w-36 lg:w-40',
@@ -32,9 +45,10 @@ const HERO_CARDS = [
   },
   {
     id: 'ai-tools',
-    title: 'AI_ECOSYSTEM • TOOLS',
+    title: 'AI Tooling',
     src: '/images/hero-ai-tools.jpg',
-    alt: 'AI Ecosystem Tools',
+    webpSrc: '/images/hero-ai-tools.webp',
+    alt: 'AI Tooling Illustration',
     // Mid-right: floating behind the ear/back of head, clear of face
     positionClass: 'top-[39%] -translate-y-1/2 -right-1 sm:-right-6 lg:-right-12',
     wClass: 'w-28 sm:w-36 lg:w-40',
@@ -43,9 +57,10 @@ const HERO_CARDS = [
   },
   {
     id: 'code-future',
-    title: 'CODE_FUTURE • LANGUAGES',
+    title: 'Core Languages',
     src: '/images/hero-code-future.jpg',
-    alt: 'Code The Future Languages',
+    webpSrc: '/images/hero-code-future.webp',
+    alt: 'Core Languages Illustration',
     // Lower-right: floating below near the shoulder, clear of body
     positionClass: 'bottom-1 sm:bottom-2 -right-1 sm:-right-4 lg:-right-10',
     wClass: 'w-28 sm:w-36 lg:w-40',
@@ -55,7 +70,7 @@ const HERO_CARDS = [
 ];
 
 /**
- * Character-by-character staggered reveal with blur-to-focus and upward motion.
+ * Character-by-character staggered reveal with crisp GPU transform and upward motion.
  */
 function StaggeredChars({
   text,
@@ -77,19 +92,19 @@ function StaggeredChars({
             initial={
               prefersReducedMotion
                 ? { opacity: 0 }
-                : { opacity: 0, y: 18, filter: 'blur(8px)' }
+                : { opacity: 0, y: 18, scale: 0.96 }
             }
             animate={
               prefersReducedMotion
                 ? { opacity: 1 }
-                : { opacity: 1, y: 0, filter: 'blur(0px)' }
+                : { opacity: 1, y: 0, scale: 1 }
             }
             transition={{
               duration: prefersReducedMotion ? 0.25 : 0.65,
               delay: prefersReducedMotion ? 0 : startDelay + index * staggerDelay,
               ease: CINEMATIC_EASE,
             }}
-            className={`inline-block will-change-[transform,opacity,filter] ${charClassName}`}
+            className={`inline-block will-change-[transform,opacity] ${charClassName}`}
             aria-hidden="true"
           >
             {isSpace ? '\u00A0' : char}
@@ -101,7 +116,7 @@ function StaggeredChars({
 }
 
 /**
- * Word-by-word staggered reveal with blur-to-focus and upward motion.
+ * Word-by-word staggered reveal with crisp GPU transform and upward motion.
  */
 function StaggeredWords({
   text,
@@ -124,19 +139,19 @@ function StaggeredWords({
             initial={
               prefersReducedMotion
                 ? { opacity: 0 }
-                : { opacity: 0, y: 16, filter: 'blur(8px)' }
+                : { opacity: 0, y: 16, scale: 0.97 }
             }
             animate={
               prefersReducedMotion
                 ? { opacity: 1 }
-                : { opacity: 1, y: 0, filter: 'blur(0px)' }
+                : { opacity: 1, y: 0, scale: 1 }
             }
             transition={{
               duration: prefersReducedMotion ? 0.25 : 0.65,
               delay: prefersReducedMotion ? 0 : startDelay + index * staggerDelay,
               ease: CINEMATIC_EASE,
             }}
-            className={`inline-block will-change-[transform,opacity,filter] ${wordClassName}`}
+            className={`inline-block will-change-[transform,opacity] ${wordClassName}`}
             aria-hidden="true"
           >
             {word}
@@ -147,65 +162,192 @@ function StaggeredWords({
   );
 }
 
-export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
+export default function HeroSection({ isRevealed = true }) {
   const heroRef = useRef(null);
   const videoRef = useRef(null);
-  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const portraitStageRef = useRef(null);
+  const statusBadgeRef = useRef(null);
+  const latencyBadgeRef = useRef(null);
+  const frameCounterRef = useRef(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [videoFailed, setVideoFailed] = useState(false);
   const prefersReducedMotion = Boolean(useReducedMotion());
 
-  // Ensure muted autoplay triggers reliably
+  // Close lightbox modal on Escape
   useEffect(() => {
-    if (!prefersReducedMotion && videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
-  }, [prefersReducedMotion]);
+    if (!previewImage) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setPreviewImage(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [previewImage]);
 
-  const currentFrame = Math.min(74, Math.max(0, Math.round(scrollProgress * 74)));
+  // Ensure hero portrait video buffers, stays muted for autoplay, and retries cleanly
+  useEffect(() => {
+    if (videoFailed || !heroRef.current || !videoRef.current) return;
+    const videoEl = videoRef.current;
+    let isVisible = true;
+
+    videoEl.defaultMuted = true;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+
+    const attemptPlay = () => {
+      if (!isVisible) return;
+      videoEl.muted = true;
+      const playPromise = videoEl.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Will retry on canplay or first user interaction if browser gated autoplay
+        });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isVisible) {
+        attemptPlay();
+      }
+    };
+
+    const handleFirstInteraction = () => {
+      if (videoEl.paused && isVisible) {
+        attemptPlay();
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          attemptPlay();
+        } else if (!videoEl.paused) {
+          videoEl.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(heroRef.current);
+    videoEl.addEventListener('loadedmetadata', attemptPlay);
+    videoEl.addEventListener('loadeddata', attemptPlay);
+    videoEl.addEventListener('canplay', attemptPlay);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pointerdown', handleFirstInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', handleFirstInteraction, { passive: true, once: true });
+
+    attemptPlay();
+
+    return () => {
+      observer.disconnect();
+      videoEl.removeEventListener('loadedmetadata', attemptPlay);
+      videoEl.removeEventListener('loadeddata', attemptPlay);
+      videoEl.removeEventListener('canplay', attemptPlay);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [videoFailed]);
+
+  // Update telemetry canvas frame text directly without triggering React re-renders
+  useEffect(() => {
+    let rafId = 0;
+    let lastFrame = -1;
+
+    const updateFrameText = () => {
+      rafId = 0;
+      if (!frameCounterRef.current) return;
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? Math.min(1, Math.max(0, scrollTop / docHeight)) : 0;
+      const frame = Math.min(74, Math.max(0, Math.round(progress * 74)));
+      if (frame !== lastFrame) {
+        lastFrame = frame;
+        frameCounterRef.current.textContent = String(frame).padStart(2, '0');
+      }
+    };
+
+    const handleScroll = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateFrameText);
+      }
+    };
+
+    updateFrameText();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   const handleScrollTo = (target, label = '') => {
     navigateWithGlitch(target, label);
   };
 
+  // GPU-composited pointer parallax applied via rAF + refs (zero React re-renders)
   useEffect(() => {
     if (
       typeof window === 'undefined' ||
+      prefersReducedMotion ||
       window.matchMedia('(pointer: coarse)').matches
     ) {
       return;
     }
 
+    const node = heroRef.current;
+    if (!node) return;
+
+    let rafId = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const applyParallax = () => {
+      rafId = 0;
+      if (portraitStageRef.current) {
+        portraitStageRef.current.style.transform = `perspective(1200px) rotateY(${(targetX * 12).toFixed(2)}deg) rotateX(${(-targetY * 8).toFixed(2)}deg)`;
+      }
+      if (statusBadgeRef.current) {
+        statusBadgeRef.current.style.transform = `translate3d(${(targetX * 14).toFixed(1)}px, ${(targetY * -8).toFixed(1)}px, 40px)`;
+      }
+      if (latencyBadgeRef.current) {
+        latencyBadgeRef.current.style.transform = `translate3d(${(targetX * 10).toFixed(1)}px, ${(targetY * -10).toFixed(1)}px, 24px)`;
+      }
+    };
+
     const handleMouseMove = (e) => {
-      if (!heroRef.current) return;
-      const rect = heroRef.current.getBoundingClientRect();
-      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-      setParallax({ x: nx, y: ny });
+      const rect = node.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyParallax);
+      }
     };
 
     const handleMouseLeave = () => {
-      setParallax({ x: 0, y: 0 });
-    };
-
-    const node = heroRef.current;
-    if (node) {
-      node.addEventListener('mousemove', handleMouseMove, { passive: true });
-      node.addEventListener('mouseleave', handleMouseLeave);
-    }
-
-    return () => {
-      if (node) {
-        node.removeEventListener('mousemove', handleMouseMove);
-        node.removeEventListener('mouseleave', handleMouseLeave);
+      targetX = 0;
+      targetY = 0;
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyParallax);
       }
     };
-  }, []);
+
+    node.addEventListener('mousemove', handleMouseMove, { passive: true });
+    node.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      node.removeEventListener('mousemove', handleMouseMove);
+      node.removeEventListener('mouseleave', handleMouseLeave);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [prefersReducedMotion]);
 
   const skillPills = [
-    'Vibe Coding',
-    'AI Prompt Engineer',
-    'React / TypeScript',
-    'Python / FastAPI',
+    'Full-Stack Development',
+    'AI Prompt Engineering',
+    'React and TypeScript',
+    'Python and FastAPI',
     'AI Automation',
   ];
 
@@ -217,7 +359,7 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
       external: true,
     },
     {
-      label: 'WhatsApp (020 54 580 186)',
+      label: 'WhatsApp (+856 20 54 580 186)',
       href: 'https://wa.me/8562054580186',
       icon: MessageCircle,
       external: true,
@@ -228,8 +370,18 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
       icon: Mail,
       external: false,
     },
+    ...(GITHUB_CONFIG.profileUrl
+      ? [
+          {
+            label: `GitHub (@${GITHUB_CONFIG.username})`,
+            href: GITHUB_CONFIG.profileUrl,
+            icon: GitHubNavIcon,
+            external: true,
+          },
+        ]
+      : []),
     {
-      label: 'Direct Channels & Contact',
+      label: 'Direct Channels and Contact',
       href: '#contact',
       icon: Share2,
       external: false,
@@ -246,10 +398,10 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
       {/* Atmospheric Dual-Tone Backdrop (Amber Left + Cyan Right) */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         {/* Warm bronze/amber ambient glow on left behind typography */}
-        <div className="absolute -top-24 -left-24 w-[680px] h-[680px] rounded-full bg-[radial-gradient(circle,rgba(217,119,6,0.16)_0%,rgba(194,65,12,0.06)_45%,transparent_72%)] blur-3xl" />
+        <div className="absolute -top-24 -left-24 w-[760px] h-[760px] rounded-full bg-[radial-gradient(circle,rgba(217,119,6,0.16)_0%,rgba(194,65,12,0.06)_45%,transparent_72%)]" />
 
         {/* Cool cyber cyan glow on right behind portrait */}
-        <div className="absolute top-1/4 right-0 w-[720px] h-[720px] rounded-full bg-[radial-gradient(circle,rgba(0,245,255,0.14)_0%,rgba(139,92,246,0.06)_45%,transparent_72%)] blur-3xl" />
+        <div className="absolute top-1/4 right-0 w-[800px] h-[800px] rounded-full bg-[radial-gradient(circle,rgba(0,245,255,0.14)_0%,rgba(139,92,246,0.06)_45%,transparent_72%)]" />
 
         {/* Subtle Architectural Cyber Grid */}
         <div
@@ -273,9 +425,9 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
 
       {/* Main 2-Column Hero Grid */}
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0.9, y: 0 }}
-        transition={{ duration: 0.9, ease: CINEMATIC_EASE }}
+        initial={{ opacity: 1, y: 10 }}
+        animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0.95, y: 0 }}
+        transition={{ duration: 0.55, ease: CINEMATIC_EASE }}
         className="relative z-10 max-w-7xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-6 items-center"
       >
         {/* ================================================================
@@ -284,122 +436,107 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
         <div className="md:col-span-6 space-y-5 text-left">
           {/* Availability Pill */}
           <motion.div
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: 'blur(4px)' }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.6, delay: 0.1, ease: CINEMATIC_EASE }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.04, ease: CINEMATIC_EASE }}
             className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-md bg-white/[0.04] border border-amber-500/30 backdrop-blur-md shadow-[0_0_20px_rgba(245,158,11,0.08)]"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_8px_#F59E0B]" />
             </span>
-            <span className="font-mono text-[11px] tracking-[0.14em] text-zinc-200 uppercase">
-              AVAILABLE FOR OPPORTUNITIES <span className="text-amber-400">/ 2026</span>
+            <span className="font-mono text-[11px] tracking-[0.12em] text-zinc-200">
+              Open to Opportunities <span className="text-amber-400">&bull; 2026</span>
             </span>
           </motion.div>
 
-          {/* Brand Name & Synthesis Title with Staggered Blur Reveal */}
-          <div className="space-y-1.5">
-            <div className="font-space font-bold text-3xl sm:text-4xl lg:text-[42px] tracking-tight leading-[1.05]">
-              {/* Highlight SOTHEAVAN with subtle neon cyan gradient & character-by-character blur reveal */}
+          {/* Primary Name Heading & Role Subtitle with Staggered Reveal */}
+          <div className="space-y-2">
+            <h1 className="font-space font-bold text-4xl sm:text-5xl lg:text-[52px] tracking-tight leading-[1.05]">
+              {/* Highlight SOTHEAVAN with subtle neon cyan gradient & staggered reveal */}
               <StaggeredChars
                 text="SOTHEAVAN"
                 charClassName="bg-gradient-to-br from-white via-[#00F5FF] to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(0,245,255,0.45)]"
-                startDelay={0.2}
-                staggerDelay={0.038}
+                startDelay={0.08}
+                staggerDelay={0.022}
                 prefersReducedMotion={prefersReducedMotion}
               />
               <span className="inline-block w-2.5 sm:w-3.5" />
               <StaggeredChars
                 text="PICH"
                 charClassName="text-white drop-shadow-[0_2px_14px_rgba(255,255,255,0.2)]"
-                startDelay={0.58}
-                staggerDelay={0.04}
-                prefersReducedMotion={prefersReducedMotion}
-              />
-              <motion.span
-                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, filter: 'blur(6px)' }}
-                animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.6, delay: 0.78, ease: CINEMATIC_EASE }}
-                className="inline-block text-zinc-300 font-normal ml-2 sm:ml-3"
-                aria-hidden="true"
-              >
-                /
-              </motion.span>
-              <br />
-              <StaggeredWords
-                text="SYNTHESIS"
-                wordClassName="text-zinc-200 font-semibold tracking-wide text-2xl sm:text-3xl lg:text-[32px]"
-                startDelay={0.86}
-                staggerDelay={0.06}
-                prefersReducedMotion={prefersReducedMotion}
-              />
-            </div>
-
-            <h1 className="font-space font-bold text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-[1.15] pt-1">
-              <StaggeredWords
-                text="DEVELOPER & VIBE CODING"
-                wordClassName="text-white drop-shadow-[0_0_24px_rgba(251,146,60,0.22)]"
-                startDelay={0.98}
-                staggerDelay={0.06}
-                prefersReducedMotion={prefersReducedMotion}
-              />
-              <br />
-              <StaggeredWords
-                text="& AI PROMPT ENGINEER"
-                wordClassName="bg-gradient-to-r from-white via-zinc-100 to-cyan-200 bg-clip-text text-transparent"
-                startDelay={1.22}
-                staggerDelay={0.065}
+                startDelay={0.28}
+                staggerDelay={0.024}
                 prefersReducedMotion={prefersReducedMotion}
               />
             </h1>
+
+            <div className="font-space font-semibold text-xl sm:text-2xl lg:text-[28px] tracking-tight leading-[1.2] pt-0.5">
+              <StaggeredWords
+                text="Full-Stack Developer"
+                wordClassName="text-zinc-100 drop-shadow-[0_0_20px_rgba(251,146,60,0.18)]"
+                startDelay={0.42}
+                staggerDelay={0.04}
+                prefersReducedMotion={prefersReducedMotion}
+              />
+              <br />
+              <StaggeredWords
+                text="and AI Prompt Engineer"
+                wordClassName="bg-gradient-to-r from-white via-zinc-100 to-cyan-200 bg-clip-text text-transparent"
+                startDelay={0.56}
+                staggerDelay={0.04}
+                prefersReducedMotion={prefersReducedMotion}
+              />
+            </div>
           </div>
 
           {/* Editorial Description */}
           <motion.p
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, filter: 'blur(6px)' }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.7, delay: 1.45, ease: CINEMATIC_EASE }}
-            className="font-inter text-sm sm:text-base text-zinc-100 leading-relaxed max-w-lg"
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0.01, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35, ease: CINEMATIC_EASE }}
+            className="font-inter text-sm sm:text-base text-zinc-200 leading-relaxed max-w-lg"
           >
-            Crafting modern full-stack applications, AI-driven workflows, and high-performance
-            digital experiences through vibe coding and prompt engineering.
+            Designing modern full-stack applications, structured AI workflows, and responsive web
+            interfaces through disciplined software engineering and prompt design.
           </motion.p>
 
           {/* Primary & Secondary Action Buttons */}
           <motion.div
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.6, ease: CINEMATIC_EASE }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.48, ease: CINEMATIC_EASE }}
             className="flex flex-wrap items-center gap-3.5 pt-1"
           >
             <button
+              type="button"
               onClick={() => handleScrollTo('#projects')}
               onMouseEnter={() => cyberAudio.playHover()}
               data-cursor="PROJECTS"
-              className="group relative overflow-hidden px-6 py-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 hover:from-amber-500/30 hover:to-orange-500/25 border border-amber-400/60 hover:border-amber-300 text-white font-mono text-xs font-semibold tracking-wider uppercase shadow-[0_0_24px_rgba(245,158,11,0.2)] hover:shadow-[0_0_34px_rgba(245,158,11,0.4)] transition-all duration-300 flex items-center gap-2.5 cursor-pointer active:scale-95"
+              className="group relative overflow-hidden px-6 py-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 hover:from-amber-500/30 hover:to-orange-500/25 border border-amber-400/60 hover:border-amber-300 text-white font-mono text-xs font-semibold tracking-wide shadow-[0_0_24px_rgba(245,158,11,0.2)] hover:shadow-[0_0_34px_rgba(245,158,11,0.4)] transition-all duration-300 flex items-center gap-2.5 cursor-pointer active:scale-95"
             >
               <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 animate-shimmer transition-opacity" />
-              <span className="relative z-10">VIEW PROJECTS</span>
+              <span className="relative z-10">View Projects</span>
               <ArrowRight className="relative z-10 w-3.5 h-3.5 text-amber-300 group-hover:translate-x-1 transition-transform" />
             </button>
 
             <button
+              type="button"
               onClick={() => handleScrollTo('#contact')}
               onMouseEnter={() => cyberAudio.playHover()}
               data-cursor="CONTACT"
-              className="group relative overflow-hidden px-6 py-3 rounded-lg bg-white/[0.04] hover:bg-cyan-500/[0.12] border border-white/15 hover:border-cyan-400/60 text-zinc-200 hover:text-cyan-300 font-mono text-xs font-medium tracking-wider uppercase backdrop-blur-md shadow-sm hover:shadow-[0_0_24px_rgba(0,245,255,0.2)] transition-all duration-300 cursor-pointer active:scale-95"
+              className="group relative overflow-hidden px-6 py-3 rounded-lg bg-white/[0.04] hover:bg-cyan-500/[0.12] border border-white/15 hover:border-cyan-400/60 text-zinc-200 hover:text-cyan-300 font-mono text-xs font-medium tracking-wide backdrop-blur-md shadow-sm hover:shadow-[0_0_24px_rgba(0,245,255,0.2)] transition-all duration-300 cursor-pointer active:scale-95"
             >
               <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 animate-shimmer transition-opacity" />
-              <span className="relative z-10">GET IN TOUCH</span>
+              <span className="relative z-10">Get in Touch</span>
             </button>
           </motion.div>
 
-          {/* Bracketed Skill Pills */}
+          {/* Skill Pills */}
           <motion.div
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.7, ease: CINEMATIC_EASE }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.56, ease: CINEMATIC_EASE }}
             className="flex flex-wrap gap-2 pt-1 max-w-xl"
           >
             {skillPills.map((skill) => (
@@ -408,16 +545,16 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                 onMouseEnter={() => cyberAudio.playHover()}
                 className="px-3 py-1.5 rounded-md bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] hover:border-cyan-400/40 font-mono text-[11px] text-zinc-300 hover:text-white transition-all duration-200 select-none"
               >
-                [ {skill} ]
+                {skill}
               </span>
             ))}
           </motion.div>
 
           {/* Social & Quick Channel Icons */}
           <motion.div
-            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.8, ease: CINEMATIC_EASE }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.64, ease: CINEMATIC_EASE }}
             className="flex items-center gap-3 pt-1"
           >
             {socialChannels.map((item) => {
@@ -453,20 +590,21 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
             RIGHT COLUMN: SEAMLESS CYBER PORTRAIT + FLOATING 3D HUD CARDS
             ================================================================ */}
         <motion.div
-          initial={prefersReducedMotion ? { opacity: 0, scale: 0.98 } : { opacity: 0, scale: 0.96, filter: 'blur(6px)' }}
-          animate={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, filter: 'blur(0px)' }}
-          transition={{ duration: 0.9, delay: 0.4, ease: CINEMATIC_EASE }}
+          initial={prefersReducedMotion ? { opacity: 1, scale: 0.99 } : { opacity: 1, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.65, delay: 0, ease: CINEMATIC_EASE }}
           className="md:col-span-6 relative flex items-center justify-center"
         >
           <div
-            className="relative w-full max-w-[580px] h-[380px] sm:h-[440px] md:h-[480px] lg:h-[530px] flex items-center justify-center transition-transform duration-300 ease-out"
+            ref={portraitStageRef}
+            className="relative w-full max-w-[580px] h-[380px] sm:h-[440px] md:h-[480px] lg:h-[530px] flex items-center justify-center transition-transform duration-300 ease-out will-change-transform"
             style={{
-              transform: `perspective(1200px) rotateY(${parallax.x * 12}deg) rotateX(${-parallax.y * 8}deg)`,
+              transform: 'perspective(1200px) rotateY(0deg) rotateX(0deg)',
               transformStyle: 'preserve-3d',
             }}
           >
             {/* Soft Glow Behind Portrait */}
-            <div className="absolute inset-10 rounded-full bg-[radial-gradient(circle,rgba(0,245,255,0.22)_0%,rgba(249,115,22,0.08)_50%,transparent_75%)] blur-2xl pointer-events-none" />
+            <div className="absolute inset-6 rounded-full bg-[radial-gradient(circle,rgba(0,245,255,0.22)_0%,rgba(249,115,22,0.08)_50%,transparent_75%)] pointer-events-none" />
 
             {/* Clean Seamless Video Portrait Stage (16:10 framed so SOTHEAVAN text & sides stay unclipped) */}
             <div
@@ -479,24 +617,37 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
               }}
               className="relative w-full aspect-[16/10] max-h-[410px] flex items-center justify-center overflow-hidden rounded-3xl group/portrait z-10"
             >
-              {prefersReducedMotion ? (
-                <img
-                  src="/glass/frame_00_delay-0.067s.png"
-                  alt="Sotheavan Pich Cyber Portrait"
-                  className="w-full h-full object-cover object-center scale-[1.06] select-none pointer-events-none group-hover/portrait:scale-[1.08] transition-transform duration-500"
-                />
+              {videoFailed ? (
+                <picture className="w-full h-full">
+                  <source srcSet="/glass/webp/frame_00_delay-0.067s.webp" type="image/webp" />
+                  <img
+                    src="/glass/frame_00_delay-0.067s.png"
+                    alt="Sotheavan Pich Cyber Portrait"
+                    decoding="async"
+                    fetchPriority="high"
+                    className="w-full h-full object-cover object-center scale-[1.06] select-none pointer-events-none group-hover/portrait:scale-[1.08] transition-transform duration-500"
+                  />
+                </picture>
               ) : (
                 <video
                   ref={videoRef}
-                  src="/videos/hero-portrait.mp4"
-                  poster="/glass/frame_00_delay-0.067s.png"
+                  poster="/glass/webp/frame_00_delay-0.067s.webp"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  preload="auto"
+                  preload="metadata"
+                  onError={() => {
+                    if (videoRef.current?.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+                      setVideoFailed(true);
+                    }
+                  }}
                   className="w-full h-full object-cover object-center scale-[1.14] select-none pointer-events-none group-hover/portrait:scale-[1.18] transition-transform duration-500"
-                />
+                >
+                  <source src="/videos/hero-portrait.webm" type="video/webm" />
+                  <source src="/videos/hero-portrait-opt.mp4" type="video/mp4" />
+                  <source src="/videos/hero-portrait.mp4" type="video/mp4" />
+                </video>
               )}
             </div>
 
@@ -508,13 +659,13 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                 tabIndex={0}
                 onClick={() => {
                   cyberAudio.playClick();
-                  setPreviewImage({ src: card.src, title: card.title });
+                  setPreviewImage({ src: card.webpSrc || card.src, fallbackSrc: card.src, title: card.title });
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     cyberAudio.playClick();
-                    setPreviewImage({ src: card.src, title: card.title });
+                    setPreviewImage({ src: card.webpSrc || card.src, fallbackSrc: card.src, title: card.title });
                   }
                 }}
                 onMouseEnter={() => cyberAudio.playHover()}
@@ -538,11 +689,15 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                 title={`Click to view ${card.title}`}
               >
                 <div className="h-16 sm:h-20 md:h-24 rounded bg-[#070a10] border border-white/10 overflow-hidden relative">
-                  <img
-                    src={card.src}
-                    alt={card.alt}
-                    className="w-full h-full object-cover object-center group-hover/card:scale-110 transition-transform duration-500"
-                  />
+                  <picture className="w-full h-full block">
+                    <source srcSet={card.webpSrc} type="image/webp" />
+                    <img
+                      src={card.src}
+                      alt={card.alt}
+                      decoding="async"
+                      className="w-full h-full object-cover object-center group-hover/card:scale-110 transition-transform duration-500"
+                    />
+                  </picture>
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0c1018]/60 via-transparent to-transparent pointer-events-none" />
                   
                   {/* View icon badge */}
@@ -550,7 +705,7 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                     <Maximize2 className="w-2.5 h-2.5" />
                   </div>
                 </div>
-                <div className="mt-1 px-0.5 flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-zinc-200 tracking-wider">
+                <div className="mt-1 px-0.5 flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-zinc-200 tracking-normal sm:tracking-wider">
                   <span className="truncate">{card.title}</span>
                 </div>
               </motion.div>
@@ -558,10 +713,11 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
 
             {/* FLOATING HUD BADGE 1: STATUS: ONLINE (Lower-Left Margin, clear of video) */}
             <div
+              ref={statusBadgeRef}
               onMouseEnter={() => cyberAudio.playHover()}
-              className="absolute bottom-20 sm:bottom-24 md:bottom-28 -left-2 sm:-left-6 lg:-left-12 z-20 rounded-lg bg-[#0c1018]/90 border border-white/15 hover:border-emerald-400/50 backdrop-blur-md px-2.5 sm:px-3 py-1.5 sm:py-2 shadow-2xl transition-all duration-300 hover:scale-105"
+              className="absolute bottom-20 sm:bottom-24 md:bottom-28 -left-2 sm:-left-6 lg:-left-12 z-20 rounded-lg bg-[#0c1018]/90 border border-white/15 hover:border-emerald-400/50 backdrop-blur-md px-2.5 sm:px-3 py-1.5 sm:py-2 shadow-2xl transition-all duration-300 hover:scale-105 will-change-transform"
               style={{
-                transform: `translate3d(${parallax.x * 14}px, ${parallax.y * -8}px, 40px)`,
+                transform: 'translate3d(0px, 0px, 40px)',
               }}
             >
               <div className="flex items-center gap-2 sm:gap-2.5">
@@ -569,51 +725,52 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                   <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 animate-pulse" />
                 </div>
                 <div className="font-mono leading-tight">
-                  <div className="text-[9px] sm:text-[10px] font-semibold text-white tracking-wider">
-                    STATUS: ONLINE
+                  <div className="text-[9px] sm:text-[10px] font-semibold text-white tracking-wide">
+                    Status: Available
                   </div>
-                  <div className="text-[8px] sm:text-[9px] text-emerald-400/90">SOUTHEAST ASIA</div>
+                  <div className="text-[8px] sm:text-[9px] text-emerald-400/90">Southeast Asia</div>
                 </div>
               </div>
             </div>
 
-            {/* FLOATING HUD BADGE 2: SYSTEM LATENCY: 14ms (Bottom-Left Margin, clear of video) */}
+            {/* FLOATING HUD BADGE 2: FOCUS & ACADEMIC STATUS */}
             <div
+              ref={latencyBadgeRef}
               onMouseEnter={() => cyberAudio.playHover()}
-              className="hidden sm:block absolute bottom-4 sm:bottom-8 left-0 sm:left-2 lg:-left-4 z-20 rounded-lg bg-[#0c1018]/90 border border-white/15 hover:border-cyan-400/50 backdrop-blur-md px-3 py-2 shadow-2xl transition-all duration-300 hover:scale-105"
+              className="hidden sm:block absolute bottom-4 sm:bottom-8 left-0 sm:left-2 lg:-left-4 z-20 rounded-lg bg-[#0c1018]/90 border border-white/15 hover:border-cyan-400/50 backdrop-blur-md px-3 py-2 shadow-2xl transition-all duration-300 hover:scale-105 will-change-transform"
               style={{
-                transform: `translate3d(${parallax.x * 10}px, ${parallax.y * -10}px, 24px)`,
+                transform: 'translate3d(0px, 0px, 24px)',
               }}
             >
               <div className="font-mono leading-tight">
-                <div className="text-[10px] text-white font-medium tracking-wider">
-                  SYSTEM LATENCY: <span className="text-cyan-400">14ms</span>
+                <div className="text-[10px] text-white font-medium tracking-wide">
+                  Focus: <span className="text-cyan-400">Full-Stack and AI</span>
                 </div>
-                <div className="text-[9px] text-zinc-200 mt-0.5">BUILD v5.4.2</div>
+                <div className="text-[9px] text-zinc-300 mt-0.5">Year 2 Programming Student</div>
               </div>
             </div>
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Bottom Telemetry Strip */}
+      {/* Bottom Scroll Indicator Strip */}
       <div className="relative z-10 max-w-7xl w-full mx-auto pt-6 mt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4 text-xs font-mono text-zinc-200">
-          <span className="text-zinc-300">CANVAS FRAME</span>
-          <span className="text-[#00F5FF]">{String(currentFrame).padStart(2, '0')}</span>
-          <span className="text-zinc-400">/ 74</span>
+        <div className="flex items-center gap-3 text-xs font-mono text-zinc-300">
+          <span className="text-zinc-400">Scene Frame</span>
+          <span ref={frameCounterRef} className="text-[#00F5FF]">00</span>
+          <span className="text-zinc-500">/ 74</span>
           <span className="text-zinc-700 hidden md:inline">&bull;</span>
-          <span className="text-zinc-300 hidden md:inline">STATUS:</span>
-          <span className="text-emerald-400 hidden md:inline">ACTIVE STUDENT &amp; DEVELOPER</span>
+          <span className="text-emerald-400 hidden md:inline">Student and Software Developer</span>
         </div>
 
         <button
+          type="button"
           onClick={() => handleScrollTo('#about')}
           onMouseEnter={() => cyberAudio.playHover()}
           data-cursor="SCROLL"
-          className="flex items-center gap-2 text-xs font-mono text-zinc-200 hover:text-white transition-colors group cursor-pointer"
+          className="flex items-center gap-2 text-xs font-mono text-zinc-300 hover:text-white transition-colors group cursor-pointer"
         >
-          <span>SCROLL TO EXPLORE JOURNEY</span>
+          <span>Scroll to Explore</span>
           <div className="w-8 h-[1px] bg-zinc-600 group-hover:w-12 group-hover:bg-[#00F5FF] transition-all" />
         </button>
       </div>
@@ -623,6 +780,9 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
         typeof document !== 'undefined' &&
         createPortal(
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={previewImage.title}
             onClick={() => {
               cyberAudio.playClick();
               setPreviewImage(null);
@@ -653,6 +813,11 @@ export default function HeroSection({ scrollProgress = 0, isRevealed = true }) {
                 <img
                   src={previewImage.src}
                   alt={previewImage.title}
+                  onError={(e) => {
+                    if (previewImage.fallbackSrc && e.currentTarget.src !== previewImage.fallbackSrc) {
+                      e.currentTarget.src = previewImage.fallbackSrc;
+                    }
+                  }}
                   className="w-full h-auto max-h-[72vh] object-contain"
                 />
               </div>
