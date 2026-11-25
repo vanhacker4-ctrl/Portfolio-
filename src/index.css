@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-dark: #08090d;
+  --accent-cyan: #00F5FF;
+  --accent-purple: #8B5CF6;
+}
+
+/* Minimalist luxury scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #08090d;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.4);
+}
+
+/* Editorial Glass Panel */
+.luxury-glass {
+  background: rgba(9, 13, 21, 0.68);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.65);
+}
+
+.luxury-glass-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.luxury-glass-hover:hover {
+  background: rgba(14, 19, 30, 0.78);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 22px 48px -15px rgba(0, 0, 0, 0.7), 0 0 32px -10px rgba(0, 245, 255, 0.16);
+}
+
+/* Subtle hairline borders */
+.hairline-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hairline-border-b {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hairline-border-t {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Subtle Ambient Gradient Background */
+.ambient-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  opacity: 0.12;
+}
+
+/* Infinite Tech Marquee */
+@keyframes techMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-tech-marquee {
+  display: flex;
+  width: max-content;
+  animation: techMarquee 32s linear infinite;
+}
+
+.animate-tech-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Shimmer scanline */
+@keyframes shimmerScan {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerScan 3s infinite linear;
+}
+
+/* Custom Card Animations */
+@keyframes floatCard {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+@keyframes waveBar {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+.animate-wave-1 { animation: waveBar 1.2s ease-in-out infinite; }
+.animate-wave-2 { animation: waveBar 0.9s ease-in-out infinite 0.2s; }
+.animate-wave-3 { animation: waveBar 1.4s ease-in-out infinite 0.4s; }
+.animate-wave-4 { animation: waveBar 1.1s ease-in-out infinite 0.1s; }
+.animate-wave-5 { animation: waveBar 1.3s ease-in-out infinite 0.3s; }
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-pop {
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Laser Scanline Animation for QR / HUD */
+@keyframes laserSweep {
+  0% {
+    top: 2%;
+    opacity: 0.85;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 2%;
+    opacity: 0.85;
+  }
+}
+
+.animate-laser-sweep {
+  animation: laserSweep 3s ease-in-out infinite;
+}
+
+/* Smooth fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Slow continuous rotation for cyber reticle */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+/* Custom Cyber Cursor on desktop */
+@media (hover: hover) and (pointer: fine) {
+  body {
+    cursor: none;
+  }
+  a, button, [role="button"], input[type="submit"], input[type="button"], select {
+    cursor: none;
+  }
+}
+
+/* =========================================================================
+   CYBERPUNK 2077 GLITCH PAGE TRANSITION (GPU-ACCELERATED)
+   ========================================================================= */
+@keyframes cyberRgbLeft {
+  0% { transform: translate3d(-10px, 2px, 0) skewX(-6deg); opacity: 0.9; }
+  25% { transform: translate3d(7px, -1px, 0) skewX(4deg); opacity: 0.85; }
+  50% { transform: translate3d(-5px, 1px, 0) skewX(-2deg); opacity: 0.7; }
+  75% { transform: translate3d(3px, 0, 0) skewX(1deg); opacity: 0.4; }
+  100% { transform: translate3d(0, 0, 0) skewX(0deg); opacity: 0; }
+}
+
+@keyframes cyberRgbRight {
+  0% { transform: translate3d(10px, -2px, 0) skewX(6deg); opacity: 0.9; }
+  25% { transform: translate3d(-7px, 1px, 0) skewX(-4deg); opacity: 0.85; }
+  50% { transform: translate3d(5px, -1px, 0) skewX(2deg); opacity: 0.7; }
+  75% { transform: translate3d(-3px, 0, 0) skewX(-1deg); opacity: 0.4; }
+  100% { transform: translate3d(0, 0, 0) skewX(0deg); opacity: 0; }
+}
+
+@keyframes cyberSliceShiftA {
+  0% { transform: translate3d(-4%, 0, 0) scaleY(1.2); opacity: 0.85; }
+  30% { transform: translate3d(6%, 0, 0) scaleY(0.8); opacity: 0.95; }
+  60% { transform: translate3d(-3%, 0, 0) scaleY(1); opacity: 0.65; }
+  100% { transform: translate3d(0, 0, 0) scaleY(0.6); opacity: 0; }
+}
+
+@keyframes cyberSliceShiftB {
+  0% { transform: translate3d(5%, 0, 0) scaleY(0.9); opacity: 0.8; }
+  35% { transform: translate3d(-7%, 0, 0) scaleY(1.3); opacity: 0.95; }
+  65% { transform: translate3d(3%, 0, 0) scaleY(1); opacity: 0.55; }
+  100% { transform: translate3d(0, 0, 0) scaleY(0.5); opacity: 0; }
+}
+
+@keyframes cyberNeonFlash {
+  0% { opacity: 0; }
+  18% { opacity: 0.34; }
+  36% { opacity: 0.1; }
+  54% { opacity: 0.28; }
+  100% { opacity: 0; }
+}
+
+@keyframes cyberPixelIn {
+  0% { opacity: 0; transform: scale3d(0.92, 0.92, 1); }
+  100% { opacity: 1; transform: scale3d(1, 1, 1); }
+}
+
+@keyframes cyberPixelDissolve {
+  0% { opacity: 1; transform: scale3d(1, 1, 1); }
+  45% { opacity: 0.85; transform: scale3d(0.96, 0.96, 1); }
+  100% { opacity: 0; transform: scale3d(0.84, 0.84, 1); }
+}
+
+@keyframes cyberScanSweep {
+  0% { transform: translate3d(0, -10vh, 0); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.75; }
+  100% { transform: translate3d(0, 108vh, 0); opacity: 0; }
+}
+
+@keyframes cyberWordmarkOut {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+  35% { opacity: 0.9; transform: translate3d(-4px, 0, 0) scale3d(1.03, 0.98, 1); }
+  100% { opacity: 0; transform: translate3d(0, -8px, 0) scale3d(1.06, 0.94, 1); }
+}
+
+@keyframes cyberStaggerSlide {
+  0% { opacity: 0; transform: translate3d(0, 18px, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.cyber-rgb-left {
+  animation: cyberRgbLeft 460ms steps(2, end) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-rgb-right {
+  animation: cyberRgbRight 460ms steps(2, end) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-slice-a {
+  animation: cyberSliceShiftA 360ms steps(3, end) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-slice-b {
+  animation: cyberSliceShiftB 380ms steps(3, end) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-neon-flash {
+  animation: cyberNeonFlash 420ms ease-out forwards;
+  will-change: opacity;
+}
+
+.cyber-pixel-in {
+  animation: cyberPixelIn 190ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-pixel-dissolve {
+  animation: cyberPixelDissolve 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-scan-sweep {
+  animation: cyberScanSweep 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-wordmark-out {
+  animation: cyberWordmarkOut 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.cyber-stagger-reveal {
+  animation: cyberStaggerSlide 520ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cyber-rgb-left,
+  .cyber-rgb-right,
+  .cyber-slice-a,
+  .cyber-slice-b,
+  .cyber-neon-flash,
+  .cyber-scan-sweep {
+    animation: none !important;
+    display: none !important;
+  }
+  .cyber-pixel-in,
+  .cyber-pixel-dissolve,
+  .cyber-wordmark-out,
+  .cyber-stagger-reveal {
+    animation-duration: 180ms !important;
+    transform: none !important;
+  }
+}
+
+/* =========================================================================
+   NEON NOIR ARCHITECTURAL GRID & HUD GLASS UTILITIES
+   ========================================================================= */
+.cyber-grid-overlay {
+  background-image:
+    linear-gradient(to right, rgba(0, 245, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 245, 255, 0.045) 1px, transparent 1px);
+  background-size: 84px 84px;
+}
+
+.cyber-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0px,
+    rgba(255, 255, 255, 0) 2px,
+    rgba(0, 245, 255, 0.015) 3px,
+    rgba(0, 245, 255, 0.015) 4px
+  );
+}
+
+.cyber-panel-hud {
+  background: linear-gradient(
+    145deg,
+    rgba(10, 15, 24, 0.72) 0%,
+    rgba(7, 10, 16, 0.65) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    0 24px 48px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* Crisp legibility shadow for headings and copy floating over canvas */
+section h1,
+section h2,
+section h3 {
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
+}
+
+section p {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+@keyframes packetStream {
+  0% {
+    transform: translateX(0%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-packet-stream {
+  animation: packetStream 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
